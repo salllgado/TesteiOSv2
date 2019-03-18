@@ -9,7 +9,7 @@
 import Foundation
 import UIKit
 
-protocol BankHistoryInteractionLogic {
+protocol BankHistoryBusinessLogic {
     
     func getStatementList(by userId: UserAccountable)
     func clearAutoLogin()
@@ -17,11 +17,12 @@ protocol BankHistoryInteractionLogic {
     func configureStatusBarRelative(to y: CGFloat)
 }
 
-class BankHistoryInteractor: BankHistoryInteractionLogic, UserAccountData {
+class BankHistoryInteractor: BankHistoryBusinessLogic, UserAccountData {
     
     var userAccount: UserAccountable?
     var presenter: BankHistoryPresentationLogic?
     
+    /// Perform request for statementList
     func getStatementList(by user: UserAccountable) {
         guard let userId = user.userId else { return }
         
@@ -40,7 +41,7 @@ class BankHistoryInteractor: BankHistoryInteractionLogic, UserAccountData {
     }
     
     func configureStatusBar() {
-        let hexColor = "#3B49EE".hexColor()
+        let hexColor = Constants.hexColors.purple.rawValue.hexColor()
         presenter?.configureStatusBar(statusBarStyle: .lightContent, backgroudColor: hexColor)
     }
     

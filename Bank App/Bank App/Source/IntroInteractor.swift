@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import WatchConnectivity
 
 /*
  - Trata das ações de interação fora do app, servidor, cor data entre outros.
@@ -20,7 +21,7 @@ protocol IntroBusinessLogic {
 }
 
 class IntroInteractor: IntroBusinessLogic, UserAccountData {
-    
+
     var userAccount: UserAccountable?
     var presenter: IntroPresentationLogic?
     
@@ -59,6 +60,7 @@ class IntroInteractor: IntroBusinessLogic, UserAccountData {
                 self.userAccount = userAccount
                 
                 KeychainWorker().saveUserLogin(login: user)
+                self.sendUserAccountToAppleWatch(userAccount)
                 self.presenter?.showHistoryController()
             }
         }
@@ -80,10 +82,29 @@ class IntroInteractor: IntroBusinessLogic, UserAccountData {
             presenter?.enableLoginButton(!enabled.contains(false))
         }
     }
+}
+
+extension IntroInteractor {
     
     /// Asks for user validation.
-    private func validUserPassword(_ user: UserLogin) -> Bool {
+    fileprivate func validUserPassword(_ user: UserLogin) -> Bool {
         guard let password = user.password else { return false }
         return password.isValidPassword()
+    }
+    
+    fileprivate func sendDataFromAppleWatch(dict: [String: Any]) {
+        do {
+            try WCSession.default.updateApplicationContext(dict)
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
+    
+    fileprivate func sendUserAccountToAppleWatch(_ userAccount: UserAccountable) {
+        guard let _ = userAccount.name else { return }
+        sendDataFromAppleWatch(dict: ["name": userAccount.name!])
+        sendDataFromAppleWatch(dict: ["agency": userAccount.agency!])
+        sendDataFromAppleWatch(dict: ["bankAccount": userAccount.bankAccount!])
+        sendDataFromAppleWatch(dict: ["balance": userAccount.balance!])
     }
 }
