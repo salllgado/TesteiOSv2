@@ -22,4 +22,10 @@ class HexColorToUIColorTests: XCTestCase {
         let colorFromHex = hexString.hexColor()
         XCTAssertEqual(colorFromHex, UIColor.init(displayP3Red: 0, green: 0, blue: 0, alpha: 1))
     }
+    
+    func testGenerateUIColorWrongHex() {
+        let hexString = "000"
+        let colorFromHex = hexString.hexColor()
+        XCTAssertEqual(colorFromHex, UIColor.gray)
+    }
 }
