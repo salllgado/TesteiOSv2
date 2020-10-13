@@ -1,0 +1,23 @@
+name: Swift
+
+ on:
+   push:
+     branches:
+       - master
+       - develop
+   pull_request:
+     branches: 
+     - master
+     - develop
+
+ jobs:
+   build:
+
+     runs-on: macos-latest
+
+     steps:
+     - uses: actions/checkout@v2
+     - name: Build/tests
+       run: |
+           cd cd Bank\ App/
+           xcodebuild test -workspace Bank\ App.xcworkspace -scheme BankApp -destination 'platform=iOS Simulator,name=iPhone 8,OS=14.0'
