@@ -1,0 +1,18 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+platform :ios do
+    desc "[BUILD] Upload new build to Firebase."
+    lane :buildAndTests do
+
+        cocoapods(clean: true)
+        clear_derived_data
+        run_tests(scheme: "BankApp", devices: ["iPhone 8"], workspace: "Bank\ App.xcworkspace")
+
+    end
+end

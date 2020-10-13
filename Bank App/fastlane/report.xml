@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="fastlane.lanes">
+    
+    
+    
+      
+      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.008973">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="1: cocoapods" time="2.40683">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="2: clear_derived_data" time="0.577084">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="3: run_tests" time="108.653136">
+        
+      </testcase>
+    
+  </testsuite>
+</testsuites>

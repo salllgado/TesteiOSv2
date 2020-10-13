@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites name='Bank AppUITests.xctest' tests='37' failures='0'>
+  <testsuite name='Bank_AppTests.BankErrorParsingTests' tests='2' failures='0'>
+    <testcase classname='Bank_AppTests.BankErrorParsingTests' name='testDecodableOptionalsNil' time='0.017'/>
+    <testcase classname='Bank_AppTests.BankErrorParsingTests' name='testDecodableWithoutOptionals' time='0.005'/>
+  </testsuite>
+  <testsuite name='Bank_AppTests.DoubleFormatAsCurrencyStringTests' tests='4' failures='0'>
+    <testcase classname='Bank_AppTests.DoubleFormatAsCurrencyStringTests' name='testFormattingCreditValue' time='0.005'/>
+    <testcase classname='Bank_AppTests.DoubleFormatAsCurrencyStringTests' name='testFormattingDebtValue' time='0.000'/>
+    <testcase classname='Bank_AppTests.DoubleFormatAsCurrencyStringTests' name='testFormattingRoundingValue' time='0.000'/>
+    <testcase classname='Bank_AppTests.DoubleFormatAsCurrencyStringTests' name='testFormattingWrongValue' time='0.000'/>
+  </testsuite>
+  <testsuite name='Bank_AppTests.FormattingBankAgencyTests' tests='2' failures='0'>
+    <testcase classname='Bank_AppTests.FormattingBankAgencyTests' name='testFormatAgency' time='0.002'/>
+    <testcase classname='Bank_AppTests.FormattingBankAgencyTests' name='testFormatAgencyAlredyFormatting' time='0.000'/>
+  </testsuite>
+  <testsuite name='Bank_AppTests.HexColorToUIColorTests' tests='2' failures='0'>
+    <testcase classname='Bank_AppTests.HexColorToUIColorTests' name='testGeneretaUIColorFromHexWithoutPrefix' time='0.002'/>
+    <testcase classname='Bank_AppTests.HexColorToUIColorTests' name='testGeneretaUIColorFromHexWithPrefix' time='0.001'/>
+  </testsuite>
+  <testsuite name='Bank_AppTests.IntroControllerTests' tests='2' failures='0'>
+    <testcase classname='Bank_AppTests.IntroControllerTests' name='testLogin' time='0.013'/>
+    <testcase classname='Bank_AppTests.IntroControllerTests' name='testTryAutoLogin' time='0.010'/>
+  </testsuite>
+  <testsuite name='Bank_AppTests.IntroInteractorTests' tests='5' failures='0'>
+    <testcase classname='Bank_AppTests.IntroInteractorTests' name='testAutoLogin' time='0.003'/>
+    <testcase classname='Bank_AppTests.IntroInteractorTests' name='testEnableLoginButton' time='0.003'/>
+    <testcase classname='Bank_AppTests.IntroInteractorTests' name='testManualLoginError' time='0.004'/>
+    <testcase classname='Bank_AppTests.IntroInteractorTests' name='testManualLoginSuccess' time='0.010'/>
+    <testcase classname='Bank_AppTests.IntroInteractorTests' name='testSetDefaultStatusBar' time='0.000'/>
+  </testsuite>
+  <testsuite name='Bank_AppTests.IntroPresenterTests' tests='6' failures='0'>
+    <testcase classname='Bank_AppTests.IntroPresenterTests' name='testEnableLoginButton' time='0.000'/>
+    <testcase classname='Bank_AppTests.IntroPresenterTests' name='testInvalidPassword' time='0.019'/>
+    <testcase classname='Bank_AppTests.IntroPresenterTests' name='testLoginLoadingAnimation' time='0.000'/>
+    <testcase classname='Bank_AppTests.IntroPresenterTests' name='testSetupStatusBar' time='0.000'/>
+    <testcase classname='Bank_AppTests.IntroPresenterTests' name='testShowError' time='0.002'/>
+    <testcase classname='Bank_AppTests.IntroPresenterTests' name='testShowHistoryController' time='0.001'/>
+  </testsuite>
+  <testsuite name='Bank_AppTests.IntroWorkerTests' tests='1' failures='0'>
+    <testcase classname='Bank_AppTests.IntroWorkerTests' name='testSomething' time='0.001'/>
+  </testsuite>
+  <testsuite name='Bank_AppTests.PasswordValidationTests' tests='4' failures='0'>
+    <testcase classname='Bank_AppTests.PasswordValidationTests' name='testValidationBlankPassword' time='0.001'/>
+    <testcase classname='Bank_AppTests.PasswordValidationTests' name='testValidationInvalidPassword' time='0.001'/>
+    <testcase classname='Bank_AppTests.PasswordValidationTests' name='testValidationShortPassword' time='0.001'/>
+    <testcase classname='Bank_AppTests.PasswordValidationTests' name='testValidationValidPassword' time='0.001'/>
+  </testsuite>
+  <testsuite name='Bank_AppTests.StatementParsingTests' tests='1' failures='0'>
+    <testcase classname='Bank_AppTests.StatementParsingTests' name='testDecodable' time='0.003'/>
+  </testsuite>
+  <testsuite name='Bank_AppTests.StatementResponseParsingTests' tests='3' failures='0'>
+    <testcase classname='Bank_AppTests.StatementResponseParsingTests' name='testDecodableOptionalsNil' time='0.001'/>
+    <testcase classname='Bank_AppTests.StatementResponseParsingTests' name='testDecodableWithError' time='0.006'/>
+    <testcase classname='Bank_AppTests.StatementResponseParsingTests' name='testDecodableWithStatementList' time='0.003'/>
+  </testsuite>
+  <testsuite name='Bank_AppTests.UserAccountParsingTests' tests='1' failures='0'>
+    <testcase classname='Bank_AppTests.UserAccountParsingTests' name='testDecodable' time='0.001'/>
+  </testsuite>
+  <testsuite name='Bank_AppTests.UserResponseParsingTests' tests='3' failures='0'>
+    <testcase classname='Bank_AppTests.UserResponseParsingTests' name='testDecodableWithErrorData' time='0.001'/>
+    <testcase classname='Bank_AppTests.UserResponseParsingTests' name='testDecodableWithNil' time='0.001'/>
+    <testcase classname='Bank_AppTests.UserResponseParsingTests' name='testDecodableWithUserAccountData' time='0.004'/>
+  </testsuite>
+  <testsuite name='Bank_AppUITests.IntroControllerUITests' tests='1' failures='0'>
+    <testcase classname='Bank_AppUITests.IntroControllerUITests' name='test1ViewSetup' time='0.146'/>
+  </testsuite>
+</testsuites>
