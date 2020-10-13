@@ -15,7 +15,10 @@ jobs:
   test:
     runs-on: macos-latest
     steps:
-      - uses: ty0x2333/cocoapods-action@master
+    - name: Run fastlane setup
+      run: |
+        fastlane setup --verbose
+      - uses: actions/checkout@v1
       - name: Run tests on fastlane
         run: |
           cd Bank\ App/
