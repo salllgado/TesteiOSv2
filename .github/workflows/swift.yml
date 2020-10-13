@@ -16,13 +16,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: ty0x2333/cocoapods-action@master
-      - name: Install Dependencies
+      - name: Run tests on fastlane
         run: |
           cd Bank\ App/
-          pod install --repo-update
+          fastlane buildAndTests
         shell: bash
-      - uses: actions/checkout@v2
-      - name: Build/tests
-        run: |
-            cd Bank\ App/
-            xcodebuild test -workspace Bank\ App.xcworkspace -scheme BankApp -destination 'platform=iOS Simulator,name=iPhone 8,OS=13.7'
