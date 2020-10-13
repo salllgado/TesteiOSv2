@@ -1,4 +1,7 @@
-# 13.7, name:iPhone 8 is available on 2020 october
+# documentation
+# https://medium.com/@wzieba/github-actions-fastlane-firebase-app-distribution-or-app-center-4fadbdff63f9
+# https://medium.com/@pauloawgcarvalho/a-simple-continuous-deployment-of-a-react-native-app-to-google-play-bda85eaa954c
+
 name: Swift
 
 on:
