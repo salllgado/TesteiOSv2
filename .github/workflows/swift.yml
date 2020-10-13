@@ -15,10 +15,11 @@ jobs:
   test:
     runs-on: macos-latest
     steps:
-    - name: Run tests on fastlane
-    - uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: 'buildAndTests'
+    - name: Run fastlane setup
       run: |
-        cd Bank\ App/
+          cd Bank\ App/
       shell: bash
+    - name: Compile and Upload
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: "buildAndTests"
