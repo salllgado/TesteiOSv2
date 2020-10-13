@@ -12,19 +12,17 @@ on:
      - develop
 
 jobs:
-  build:
-
+  test:
     runs-on: macos-latest
-
     steps:
-    - name: Install Dependencies
-      run: |
-        cd Bank\ App/
-        pod install
-      shell: bash
-    - uses: ty0x2333/cocoapods-action@master
-    - uses: actions/checkout@v2
-    - name: Build/tests
-      run: |
-          cd Bank\ App/
-          xcodebuild test -workspace Bank\ App.xcworkspace -scheme BankApp -destination 'platform=iOS Simulator,name=iPhone 8,OS=13.7'
+      - uses: ty0x2333/cocoapods-action@master
+      - name: Install Dependencies
+        run: |
+          cd Example
+          pod install --repo-update
+        shell: bash
+      - uses: actions/checkout@v2
+      - name: Build/tests
+        run: |
+            cd Bank\ App/
+            xcodebuild test -workspace Bank\ App.xcworkspace -scheme BankApp -destination 'platform=iOS Simulator,name=iPhone 8,OS=13.7'
