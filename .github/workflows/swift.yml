@@ -18,7 +18,7 @@ jobs:
       - uses: ty0x2333/cocoapods-action@master
       - name: Install Dependencies
         run: |
-          cd Example
+          cd Bank\ App/
           pod install --repo-update
         shell: bash
       - uses: actions/checkout@v2
