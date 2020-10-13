@@ -16,6 +16,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Run fastlane setup
+      uses: actions/checkout@v2
       run: |
           cd Bank\ App/
       shell: bash
