@@ -19,5 +19,5 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build/tests
       run: |
-          cd cd Bank\ App/
+          cd Bank\ App/
           xcodebuild test -workspace Bank\ App.xcworkspace -scheme BankApp -destination 'platform=iOS Simulator,name=iPhone 8,OS=14.0'
