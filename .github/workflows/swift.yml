@@ -18,9 +18,9 @@ jobs:
     - name: Run fastlane setup
       run: |
         fastlane setup --verbose
-      - uses: actions/checkout@v1
-      - name: Run tests on fastlane
-        run: |
-          cd Bank\ App/
-          fastlane buildAndTests
-        shell: bash
+    - uses: actions/checkout@v1
+    - name: Run tests on fastlane
+      run: |
+        cd Bank\ App/
+        fastlane buildAndTests
+      shell: bash
