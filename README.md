@@ -1,4 +1,4 @@
-![CI Status](https://github.com/salllgado/TesteiOSv2/workflows/Swift/badge.svg)](https://github.com/salllgado/TesteiOSv2/actions)
+![CI Status](https://github.com/salllgado/TesteiOSv2/workflows/Swift/badge.svg)]
 
 # BankApp Test
 
