@@ -26,48 +26,48 @@ class IntroControllerUITests: KIFTestCase {
         tester().waitForView(withAccessibilityLabel: "Login", traits: .notEnabled)
     }
 
-    /// Try catch password error.
-    func test2PasswordWrongError() {
-        tester().tapView(withAccessibilityLabel: passwordFieldPlaceholder)
-        tester().waitForSoftwareKeyboard()
-        tester().enterText(intoCurrentFirstResponder: "123456")
-        tester().waitForView(withAccessibilityLabel: "Login", traits: .notEnabled)
-    }
-    
-    /// Try a login.
-    func test3UserAndPasswordError() {
-        // Try enter some data into emailTf
-        tester().tapView(withAccessibilityLabel: emailFieldPlaceholder)
-        tester().waitForSoftwareKeyboard()
-        tester().enterText(intoCurrentFirstResponder: "test_user")
-        
-        // Try enter some data into passwordTf
-        getPasswordTfName { (textFieldName) in
-            self.tester().tapView(withAccessibilityLabel: textFieldName)
-            self.tester().waitForSoftwareKeyboard()
-            self.tester().enterText(intoCurrentFirstResponder: "Test@1")
-        }
-        
-        tester().tapView(withAccessibilityLabel: "Login")
-        tester().waitForView(withAccessibilityLabel: "OK", traits: [])
-        tester().tapView(withAccessibilityLabel: "OK")
-    }
-    
-    /// Try a login.
-    func test4LoginSuccess() {
-        getPasswordTfName { (textFieldName) in
-            self.tester().tapView(withAccessibilityLabel: self.emailFieldPlaceholder)
-            self.tester().waitForSoftwareKeyboard()
-            self.tester().enterText(intoCurrentFirstResponder: "test_user")
-            
-            // Try enter some data into passwordTf
-            self.tester().tapView(withAccessibilityLabel: textFieldName)
-            self.tester().waitForSoftwareKeyboard()
-            self.tester().enterText(intoCurrentFirstResponder: "Test20@9")
-            
-            self.tester().tapView(withAccessibilityLabel: "Login")
-        }
-    }
+//    /// Try catch password error.
+//    func test2PasswordWrongError() {
+//        tester().tapView(withAccessibilityLabel: passwordFieldPlaceholder)
+//        tester().waitForSoftwareKeyboard()
+//        tester().enterText(intoCurrentFirstResponder: "123456")
+//        tester().waitForView(withAccessibilityLabel: "Login", traits: .notEnabled)
+//    }
+//
+//    /// Try a login.
+//    func test3UserAndPasswordError() {
+//        // Try enter some data into emailTf
+//        tester().tapView(withAccessibilityLabel: emailFieldPlaceholder)
+//        tester().waitForSoftwareKeyboard()
+//        tester().enterText(intoCurrentFirstResponder: "test_user")
+//
+//        // Try enter some data into passwordTf
+//        getPasswordTfName { (textFieldName) in
+//            self.tester().tapView(withAccessibilityLabel: textFieldName)
+//            self.tester().waitForSoftwareKeyboard()
+//            self.tester().enterText(intoCurrentFirstResponder: "Test@1")
+//        }
+//
+//        tester().tapView(withAccessibilityLabel: "Login")
+//        tester().waitForView(withAccessibilityLabel: "OK", traits: [])
+//        tester().tapView(withAccessibilityLabel: "OK")
+//    }
+//
+//    /// Try a login.
+//    func test4LoginSuccess() {
+//        getPasswordTfName { (textFieldName) in
+//            self.tester().tapView(withAccessibilityLabel: self.emailFieldPlaceholder)
+//            self.tester().waitForSoftwareKeyboard()
+//            self.tester().enterText(intoCurrentFirstResponder: "test_user")
+//
+//            // Try enter some data into passwordTf
+//            self.tester().tapView(withAccessibilityLabel: textFieldName)
+//            self.tester().waitForSoftwareKeyboard()
+//            self.tester().enterText(intoCurrentFirstResponder: "Test20@9")
+//
+//            self.tester().tapView(withAccessibilityLabel: "Login")
+//        }
+//    }
     
     private func getPasswordTfName(completion: @escaping (_ tfName: String)->Void) {
         // Try enter some data into emailTf

@@ -11,7 +11,7 @@ DEPENDENCIES:
   - TPKeyboardAvoiding (from `https://github.com/michaeltyson/TPKeyboardAvoiding.git`)
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - KeychainSwift
     - KIF
 
@@ -31,4 +31,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 01ac08e909fa3e185ca21988707fc05a17e6ef81
 
-COCOAPODS: 1.6.0
+COCOAPODS: 1.9.3

@@ -1,11 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1000"
+   LastUpgradeVersion = "1200"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES">
       <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "789A079B2232A30900ACD61D"
+               BuildableName = "Bank Watch App.app"
+               BlueprintName = "Bank Watch App"
+               ReferencedContainer = "container:Bank App.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
          <BuildActionEntry
             buildForTesting = "YES"
             buildForRunning = "YES"
@@ -28,41 +42,10 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B879C06021E6B4B700ED1591"
-               BuildableName = "Bank AppTests.xctest"
-               BlueprintName = "Bank AppTests"
-               ReferencedContainer = "container:Bank App.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "78224095221C42A90056ED10"
-               BuildableName = "Bank AppUITests.xctest"
-               BlueprintName = "Bank AppUITests"
-               ReferencedContainer = "container:Bank App.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "B86E3F4921A62B0700A9B84F"
-            BuildableName = "Bank App.app"
-            BlueprintName = "Bank App"
-            ReferencedContainer = "container:Bank App.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
@@ -71,18 +54,18 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <RemoteRunnable
+         runnableDebuggingMode = "2"
+         BundleIdentifier = "com.apple.Carousel"
+         RemotePath = "/Bank App">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "B86E3F4921A62B0700A9B84F"
-            BuildableName = "Bank App.app"
-            BlueprintName = "Bank App"
+            BlueprintIdentifier = "789A079B2232A30900ACD61D"
+            BuildableName = "Bank Watch App.app"
+            BlueprintName = "Bank Watch App"
             ReferencedContainer = "container:Bank App.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
-      <AdditionalOptions>
-      </AdditionalOptions>
+      </RemoteRunnable>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -90,19 +73,30 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <RemoteRunnable
+         runnableDebuggingMode = "2"
+         BundleIdentifier = "com.apple.Carousel"
+         RemotePath = "/Bank App">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "B86E3F4921A62B0700A9B84F"
-            BuildableName = "Bank App.app"
-            BlueprintName = "Bank App"
+            BlueprintIdentifier = "789A079B2232A30900ACD61D"
+            BuildableName = "Bank Watch App.app"
+            BlueprintName = "Bank Watch App"
             ReferencedContainer = "container:Bank App.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </RemoteRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "789A079B2232A30900ACD61D"
+            BuildableName = "Bank Watch App.app"
+            BlueprintName = "Bank Watch App"
+            ReferencedContainer = "container:Bank App.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
-      buildConfiguration = "Release">
+      buildConfiguration = "Debug">
    </AnalyzeAction>
    <ArchiveAction
       buildConfiguration = "Release"

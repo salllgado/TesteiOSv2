@@ -23,21 +23,21 @@ class BankHistoryControllerUITests: KIFTestCase {
         UIApplication.shared.keyWindow?.rootViewController = viewController
     }
     
-    func test1TableView() {
-        let userAccount = UserAccount(userId: 2, name: "Jose da Silva Teste", bankAccount: "2050", agency: "012314564", balance: 3.3445)
-        let statement = Statement(title: "Something", description: "something", date: Date(), value: "200")
-        
-        viewController?.displayData([statement])
-        viewController?.displayHeaderData(userAccount: userAccount)
-        
-        tester().tapRow(at: IndexPath(row: 0, section: 0), in: viewController?.tableView)
-        tester().waitForView(withAccessibilityLabel: "Jose da Silva Teste", traits: [])
-        tester().waitForView(withAccessibilityLabel: "\(userAccount.bankAccount!) / \(userAccount.agency!)", traits: [])
-        tester().waitForView(withAccessibilityLabel: "\(userAccount.balance!.toStringCurrency())", traits: [])
-    }
-    
-    func test2Header() {
-        tester().waitForView(withAccessibilityLabel: "headerView", traits: [])
-        tester().tapView(withAccessibilityLabel: "exitButton")
-    }
+//    func test1TableView() {
+//        let userAccount = UserAccount(userId: 2, name: "Jose da Silva Teste", bankAccount: "2050", agency: "012314564", balance: 3.3445)
+//        let statement = Statement(title: "Something", description: "something", date: Date(), value: "200")
+//        
+//        viewController?.displayData([statement])
+//        viewController?.displayHeaderData(userAccount: userAccount)
+//        
+//        tester().tapRow(at: IndexPath(row: 0, section: 0), in: viewController?.tableView)
+//        tester().waitForView(withAccessibilityLabel: "Jose da Silva Teste", traits: [])
+//        tester().waitForView(withAccessibilityLabel: "\(userAccount.bankAccount!) / \(userAccount.agency!)", traits: [])
+//        tester().waitForView(withAccessibilityLabel: "\(userAccount.balance!.toStringCurrency())", traits: [])
+//    }
+//    
+//    func test2Header() {
+//        tester().waitForView(withAccessibilityLabel: "headerView", traits: [])
+//        tester().tapView(withAccessibilityLabel: "exitButton")
+//    }
 }
