@@ -1,4 +1,4 @@
-![Actions Status](https://xxx.execute-api.us-west-2.amazonaws.com/production/badge/salllgado/TesteiOSv2)](https://xxx.execute-api.us-west-2.amazonaws.com/production/results/salllgado/TesteiOSv2)
+![CI Status](https://github.com/salllgado/TesteiOSv2/workflows/Swift/badge.svg)](https://github.com/salllgado/TesteiOSv2/actions)
 
 # BankApp Test
 
