@@ -1,4 +1,7 @@
 ![CI Status](https://github.com/salllgado/TesteiOSv2/workflows/Swift/badge.svg)
+![Language](https://img.shields.io/badge/language-Swift-orange)
+![iOS](https://img.shields.io/badge/iOS-9.0%2B-success)
+![COCOAPODS](https://img.shields.io/badge/dependency-cocoapods-red)
 
 # BankApp Test
 
