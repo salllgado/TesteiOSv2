@@ -17,11 +17,9 @@ jobs:
     steps:
     - name: Run fastlane setup
       run: |
-        fastlane setup --verbose
+          cd Bank\ App/
+      shell: bash
     - uses: maierj/fastlane-action@v1.4.0
     - name: Run tests on fastlane
       with:
           lane: 'buildAndTests'
-      run: |
-          cd Bank\ App/
-      shell: bash
