@@ -1,0 +1,165 @@
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank AppUITests/BankHistoryControllerUITests.swift:
+    1|       |//
+    2|       |//  BankHistoryController.swift
+    3|       |//  Bank AppUITests
+    4|       |//
+    5|       |//  Created by Chrystian Salgado on 19/02/19.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import XCTest
+   10|       |@testable import Bank_App
+   11|       |
+   12|       |class BankHistoryControllerUITests: KIFTestCase {
+   13|       |    
+   14|      0|    let emailFieldPlaceholder = NSLocalizedString("EMAIL_PLACEHOLDER", comment: "")
+   15|      0|    let passwordFieldPlaceholder = NSLocalizedString("PASSWORD_PLACEHOLDER", comment: "")
+   16|       |    
+   17|       |    var viewController: BankHistoryController?
+   18|       |    
+   19|      0|    override func setUp() {
+   20|      0|        let storyboard = UIStoryboard(name: "BankHistory", bundle: Bundle.main)
+   21|      0|        let viewController = storyboard.instantiateViewController(withIdentifier: "BankHistoryController") as! BankHistoryController
+   22|      0|        self.viewController = viewController
+   23|      0|        UIApplication.shared.keyWindow?.rootViewController = viewController
+   24|      0|    }
+   25|       |    
+   26|       |//    func test1TableView() {
+   27|       |//        let userAccount = UserAccount(userId: 2, name: "Jose da Silva Teste", bankAccount: "2050", agency: "012314564", balance: 3.3445)
+   28|       |//        let statement = Statement(title: "Something", description: "something", date: Date(), value: "200")
+   29|       |//        
+   30|       |//        viewController?.displayData([statement])
+   31|       |//        viewController?.displayHeaderData(userAccount: userAccount)
+   32|       |//        
+   33|       |//        tester().tapRow(at: IndexPath(row: 0, section: 0), in: viewController?.tableView)
+   34|       |//        tester().waitForView(withAccessibilityLabel: "Jose da Silva Teste", traits: [])
+   35|       |//        tester().waitForView(withAccessibilityLabel: "\(userAccount.bankAccount!) / \(userAccount.agency!)", traits: [])
+   36|       |//        tester().waitForView(withAccessibilityLabel: "\(userAccount.balance!.toStringCurrency())", traits: [])
+   37|       |//    }
+   38|       |//    
+   39|       |//    func test2Header() {
+   40|       |//        tester().waitForView(withAccessibilityLabel: "headerView", traits: [])
+   41|       |//        tester().tapView(withAccessibilityLabel: "exitButton")
+   42|       |//    }
+   43|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank AppUITests/IntroControllerUITests.swift:
+    1|       |//
+    2|       |//  Bank_AppUITests.swift
+    3|       |//  Bank AppUITests
+    4|       |//
+    5|       |//  Created by Chrystian Salgado on 19/02/19.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import XCTest
+   10|       |@testable import Bank_App
+   11|       |
+   12|       |class IntroControllerUITests: KIFTestCase {
+   13|       |    
+   14|      5|    let emailFieldPlaceholder = NSLocalizedString("EMAIL_PLACEHOLDER", comment: "")
+   15|      5|    let passwordFieldPlaceholder = NSLocalizedString("PASSWORD_PLACEHOLDER", comment: "")
+   16|       |    
+   17|      1|    override func setUp() {
+   18|      1|        let storyboard = UIStoryboard(name: "Main", bundle: Bundle.main)
+   19|      1|        let viewController = storyboard.instantiateInitialViewController()
+   20|      1|        UIApplication.shared.keyWindow?.rootViewController = viewController
+   21|      1|    }
+   22|       |    
+   23|      1|    func test1ViewSetup() {
+   24|      1|        tester().waitForView(withAccessibilityLabel: emailFieldPlaceholder, traits: [])
+   25|      1|        tester().waitForView(withAccessibilityLabel: passwordFieldPlaceholder, traits: [])
+   26|      1|        tester().waitForView(withAccessibilityLabel: "Login", traits: .notEnabled)
+   27|      1|    }
+   28|       |
+   29|       |//    /// Try catch password error.
+   30|       |//    func test2PasswordWrongError() {
+   31|       |//        tester().tapView(withAccessibilityLabel: passwordFieldPlaceholder)
+   32|       |//        tester().waitForSoftwareKeyboard()
+   33|       |//        tester().enterText(intoCurrentFirstResponder: "123456")
+   34|       |//        tester().waitForView(withAccessibilityLabel: "Login", traits: .notEnabled)
+   35|       |//    }
+   36|       |//
+   37|       |//    /// Try a login.
+   38|       |//    func test3UserAndPasswordError() {
+   39|       |//        // Try enter some data into emailTf
+   40|       |//        tester().tapView(withAccessibilityLabel: emailFieldPlaceholder)
+   41|       |//        tester().waitForSoftwareKeyboard()
+   42|       |//        tester().enterText(intoCurrentFirstResponder: "test_user")
+   43|       |//
+   44|       |//        // Try enter some data into passwordTf
+   45|       |//        getPasswordTfName { (textFieldName) in
+   46|       |//            self.tester().tapView(withAccessibilityLabel: textFieldName)
+   47|       |//            self.tester().waitForSoftwareKeyboard()
+   48|       |//            self.tester().enterText(intoCurrentFirstResponder: "Test@1")
+   49|       |//        }
+   50|       |//
+   51|       |//        tester().tapView(withAccessibilityLabel: "Login")
+   52|       |//        tester().waitForView(withAccessibilityLabel: "OK", traits: [])
+   53|       |//        tester().tapView(withAccessibilityLabel: "OK")
+   54|       |//    }
+   55|       |//
+   56|       |//    /// Try a login.
+   57|       |//    func test4LoginSuccess() {
+   58|       |//        getPasswordTfName { (textFieldName) in
+   59|       |//            self.tester().tapView(withAccessibilityLabel: self.emailFieldPlaceholder)
+   60|       |//            self.tester().waitForSoftwareKeyboard()
+   61|       |//            self.tester().enterText(intoCurrentFirstResponder: "test_user")
+   62|       |//
+   63|       |//            // Try enter some data into passwordTf
+   64|       |//            self.tester().tapView(withAccessibilityLabel: textFieldName)
+   65|       |//            self.tester().waitForSoftwareKeyboard()
+   66|       |//            self.tester().enterText(intoCurrentFirstResponder: "Test20@9")
+   67|       |//
+   68|       |//            self.tester().tapView(withAccessibilityLabel: "Login")
+   69|       |//        }
+   70|       |//    }
+   71|       |    
+   72|      0|    private func getPasswordTfName(completion: @escaping (_ tfName: String)->Void) {
+   73|      0|        // Try enter some data into emailTf
+   74|      0|        do {
+   75|      0|            try tester().tryFindingTappableView(withAccessibilityLabel: passwordFieldPlaceholder)
+   76|      0|            completion(passwordFieldPlaceholder)
+   77|      0|        } catch {
+   78|      0|            do {
+   79|      0|                let tfName = NSLocalizedString("SENHA_INVALIDA", comment: "")
+   80|      0|                try tester().tryFindingTappableView(withAccessibilityLabel: tfName)
+   81|      0|                completion(tfName)
+   82|      0|            } catch {
+   83|      0|                XCTFail(error.localizedDescription)
+   84|      0|            }
+   85|      0|        }
+   86|      0|    }
+   87|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank AppUITests/KIFHelper.swift:
+    1|       |//
+    2|       |//  KIFHelper.swift
+    3|       |//  Bank AppUITests
+    4|       |//
+    5|       |//  Created by Chrystian Salgado on 19/02/19.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |
+   11|       |extension XCTestCase {
+   12|      3|    func tester(file : String = #file, _ line : Int = #line) -> KIFUITestActor {
+   13|      3|        return KIFUITestActor(inFile: file, atLine: line, delegate: self)
+   14|      3|    }
+   15|       |    
+   16|      0|    func system(file : String = #file, _ line : Int = #line) -> KIFSystemTestActor {
+   17|      0|        return KIFSystemTestActor(inFile: file, atLine: line, delegate: self)
+   18|      0|    }
+   19|       |}
+   20|       |
+   21|       |extension KIFTestActor {
+   22|      0|    func tester(file : String = #file, _ line : Int = #line) -> KIFUITestActor {
+   23|      0|        return KIFUITestActor(inFile: file, atLine: line, delegate: self)
+   24|      0|    }
+   25|       |    
+   26|      0|    func system(file : String = #file, _ line : Int = #line) -> KIFSystemTestActor {
+   27|      0|        return KIFSystemTestActor(inFile: file, atLine: line, delegate: self)
+   28|      0|    }
+   29|       |}
+

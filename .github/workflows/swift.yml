@@ -29,3 +29,7 @@ jobs:
       with:
         lane: "buildAndTests"
         subdirectory: "Bank\ App/"
+    - name: upload coverage to codecov
+      uses: codecov/codecov-action@v1
+      with:
+        token: a75ed3e0-ded2-478a-bd06-f32c58f29654 # not required for public repos

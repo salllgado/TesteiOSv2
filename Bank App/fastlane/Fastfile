@@ -12,7 +12,6 @@ platform :ios do
 
         cocoapods(clean: true)
         clear_derived_data
-        run_tests(scheme: "BankApp", devices: ["iPhone 8"], workspace: "Bank\ App.xcworkspace")
-
+        run_tests(scheme: "BankApp", devices: ["iPhone 8"], workspace: "Bank\ App.xcworkspace", code_coverage: true)
     end
 end

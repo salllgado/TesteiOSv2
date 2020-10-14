@@ -1,0 +1,773 @@
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Pods/TPKeyboardAvoiding/TPKeyboardAvoiding/TPKeyboardAvoidingCollectionView.m:
+    1|       |//
+    2|       |//  TPKeyboardAvoidingCollectionView.m
+    3|       |//  TPKeyboardAvoiding
+    4|       |//
+    5|       |//  Created by Michael Tyson on 30/09/2013.
+    6|       |//  Copyright 2015 A Tasty Pixel & The CocoaBots. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |#import "TPKeyboardAvoidingCollectionView.h"
+   10|       |
+   11|       |@interface TPKeyboardAvoidingCollectionView () <UITextFieldDelegate, UITextViewDelegate>
+   12|       |@end
+   13|       |
+   14|       |@implementation TPKeyboardAvoidingCollectionView
+   15|       |
+   16|       |#pragma mark - Setup/Teardown
+   17|       |
+   18|      0|- (void)setup {
+   19|      0|    if ( [self hasAutomaticKeyboardAvoidingBehaviour] ) return;
+   20|      0|    
+   21|      0|    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(TPKeyboardAvoiding_keyboardWillShow:) name:UIKeyboardWillChangeFrameNotification object:nil];
+   22|      0|    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(TPKeyboardAvoiding_keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+   23|      0|    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(scrollToActiveTextField) name:UITextViewTextDidBeginEditingNotification object:nil];
+   24|      0|    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(scrollToActiveTextField) name:UITextFieldTextDidBeginEditingNotification object:nil];
+   25|      0|}
+   26|       |
+   27|      0|-(id)initWithFrame:(CGRect)frame {
+   28|      0|    if ( !(self = [super initWithFrame:frame]) ) return nil;
+   29|      0|    [self setup];
+   30|      0|    return self;
+   31|      0|}
+   32|       |
+   33|      0|- (id)initWithFrame:(CGRect)frame collectionViewLayout:(UICollectionViewLayout *)layout {
+   34|      0|    if ( !(self = [super initWithFrame:frame collectionViewLayout:layout]) ) return nil;
+   35|      0|    [self setup];
+   36|      0|    return self;
+   37|      0|}
+   38|       |
+   39|      0|-(void)awakeFromNib {
+   40|      0|    [super awakeFromNib];
+   41|      0|    [self setup];
+   42|      0|}
+   43|       |
+   44|      0|-(void)dealloc {
+   45|      0|    [[NSNotificationCenter defaultCenter] removeObserver:self];
+   46|      0|#if !__has_feature(objc_arc)
+   47|      0|    [super dealloc];
+   48|      0|#endif
+   49|      0|}
+   50|       |
+   51|       |
+   52|      0|-(BOOL)hasAutomaticKeyboardAvoidingBehaviour {
+   53|      0|    if ( [[[UIDevice currentDevice] systemVersion] integerValue] >= 9
+   54|      0|            && [self.delegate isKindOfClass:[UICollectionViewController class]] ) {
+   55|      0|        // Theory: It looks like iOS 9's collection views automatically avoid the keyboard. As usual
+   56|      0|        // Apple have totally failed to document this anywhere, so this is just a guess.
+   57|      0|        return YES;
+   58|      0|    }
+   59|      0|    
+   60|      0|    return NO;
+   61|      0|}
+   62|       |
+   63|      0|-(void)setFrame:(CGRect)frame {
+   64|      0|    [super setFrame:frame];
+   65|      0|    [self TPKeyboardAvoiding_updateContentInset];
+   66|      0|}
+   67|       |
+   68|      0|-(void)setContentSize:(CGSize)contentSize {
+   69|      0|    if (CGSizeEqualToSize(contentSize, self.contentSize)) {
+   70|      0|        // Prevent triggering contentSize when it's already the same that
+   71|      0|        // cause weird infinte scrolling and locking bug
+   72|      0|        return;
+   73|      0|    }
+   74|      0|    [super setContentSize:contentSize];
+   75|      0|    [self TPKeyboardAvoiding_updateContentInset];
+   76|      0|}
+   77|       |
+   78|      0|- (BOOL)focusNextTextField {
+   79|      0|    return [self TPKeyboardAvoiding_focusNextTextField];
+   80|      0|    
+   81|      0|}
+   82|      0|- (void)scrollToActiveTextField {
+   83|      0|    return [self TPKeyboardAvoiding_scrollToActiveTextField];
+   84|      0|}
+   85|       |
+   86|       |#pragma mark - Responders, events
+   87|       |
+   88|      0|-(void)willMoveToSuperview:(UIView *)newSuperview {
+   89|      0|    [super willMoveToSuperview:newSuperview];
+   90|      0|    if ( !newSuperview ) {
+   91|      0|        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(TPKeyboardAvoiding_assignTextDelegateForViewsBeneathView:) object:self];
+   92|      0|    }
+   93|      0|}
+   94|       |
+   95|      0|- (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+   96|      0|    [[self TPKeyboardAvoiding_findFirstResponderBeneathView:self] resignFirstResponder];
+   97|      0|    [super touchesEnded:touches withEvent:event];
+   98|      0|}
+   99|       |
+  100|      0|-(BOOL)textFieldShouldReturn:(UITextField *)textField {
+  101|      0|    if ( ![self focusNextTextField] ) {
+  102|      0|        [textField resignFirstResponder];
+  103|      0|    }
+  104|      0|    return YES;
+  105|      0|}
+  106|       |
+  107|      0|-(void)layoutSubviews {
+  108|      0|    [super layoutSubviews];
+  109|      0|    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(TPKeyboardAvoiding_assignTextDelegateForViewsBeneathView:) object:self];
+  110|      0|    [self performSelector:@selector(TPKeyboardAvoiding_assignTextDelegateForViewsBeneathView:) withObject:self afterDelay:0.1];
+  111|      0|}
+  112|       |
+  113|       |@end
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Pods/TPKeyboardAvoiding/TPKeyboardAvoiding/TPKeyboardAvoidingScrollView.m:
+    1|       |//
+    2|       |//  TPKeyboardAvoidingScrollView.m
+    3|       |//  TPKeyboardAvoiding
+    4|       |//
+    5|       |//  Created by Michael Tyson on 30/09/2013.
+    6|       |//  Copyright 2015 A Tasty Pixel. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |#import "TPKeyboardAvoidingScrollView.h"
+   10|       |
+   11|       |@interface TPKeyboardAvoidingScrollView () <UITextFieldDelegate, UITextViewDelegate>
+   12|       |@end
+   13|       |
+   14|       |@implementation TPKeyboardAvoidingScrollView
+   15|       |
+   16|       |#pragma mark - Setup/Teardown
+   17|       |
+   18|      5|- (void)setup {
+   19|      5|    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(TPKeyboardAvoiding_keyboardWillShow:) name:UIKeyboardWillChangeFrameNotification object:nil];
+   20|      5|    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(TPKeyboardAvoiding_keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+   21|      5|    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(scrollToActiveTextField) name:UITextViewTextDidBeginEditingNotification object:nil];
+   22|      5|    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(scrollToActiveTextField) name:UITextFieldTextDidBeginEditingNotification object:nil];
+   23|      5|}
+   24|       |
+   25|      0|-(id)initWithFrame:(CGRect)frame {
+   26|      0|    if ( !(self = [super initWithFrame:frame]) ) return nil;
+   27|      0|    [self setup];
+   28|      0|    return self;
+   29|      0|}
+   30|       |
+   31|      5|-(void)awakeFromNib {
+   32|      5|    [super awakeFromNib];
+   33|      5|    [self setup];
+   34|      5|}
+   35|       |
+   36|      0|-(void)dealloc {
+   37|      0|    [[NSNotificationCenter defaultCenter] removeObserver:self];
+   38|      0|#if !__has_feature(objc_arc)
+   39|      0|    [super dealloc];
+   40|      0|#endif
+   41|      0|}
+   42|       |
+   43|      5|-(void)setFrame:(CGRect)frame {
+   44|      5|    [super setFrame:frame];
+   45|      5|    [self TPKeyboardAvoiding_updateContentInset];
+   46|      5|}
+   47|       |
+   48|      3|-(void)setContentSize:(CGSize)contentSize {
+   49|      3|    [super setContentSize:contentSize];
+   50|      3|    [self TPKeyboardAvoiding_updateFromContentSizeChange];
+   51|      3|}
+   52|       |
+   53|      0|- (void)contentSizeToFit {
+   54|      0|    self.contentSize = [self TPKeyboardAvoiding_calculatedContentSizeFromSubviewFrames];
+   55|      0|}
+   56|       |
+   57|      0|- (BOOL)focusNextTextField {
+   58|      0|    return [self TPKeyboardAvoiding_focusNextTextField];
+   59|      0|    
+   60|      0|}
+   61|      0|- (void)scrollToActiveTextField {
+   62|      0|    return [self TPKeyboardAvoiding_scrollToActiveTextField];
+   63|      0|}
+   64|       |
+   65|       |#pragma mark - Responders, events
+   66|       |
+   67|      5|-(void)willMoveToSuperview:(UIView *)newSuperview {
+   68|      5|    [super willMoveToSuperview:newSuperview];
+   69|      5|    if ( !newSuperview ) {
+   70|      0|        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(TPKeyboardAvoiding_assignTextDelegateForViewsBeneathView:) object:self];
+   71|      0|    }
+   72|      5|}
+   73|       |
+   74|      0|- (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+   75|      0|    [[self TPKeyboardAvoiding_findFirstResponderBeneathView:self] resignFirstResponder];
+   76|      0|    [super touchesEnded:touches withEvent:event];
+   77|      0|}
+   78|       |
+   79|      0|-(BOOL)textFieldShouldReturn:(UITextField *)textField {
+   80|      0|    if ( ![self focusNextTextField] ) {
+   81|      0|        [textField resignFirstResponder];
+   82|      0|    }
+   83|      0|    return YES;
+   84|      0|}
+   85|       |
+   86|      3|-(void)layoutSubviews {
+   87|      3|    [super layoutSubviews];
+   88|      3|    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(TPKeyboardAvoiding_assignTextDelegateForViewsBeneathView:) object:self];
+   89|      3|    [self performSelector:@selector(TPKeyboardAvoiding_assignTextDelegateForViewsBeneathView:) withObject:self afterDelay:0.1];
+   90|      3|}
+   91|       |
+   92|       |@end
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Pods/TPKeyboardAvoiding/TPKeyboardAvoiding/TPKeyboardAvoidingTableView.m:
+    1|       |//
+    2|       |//  TPKeyboardAvoidingTableView.m
+    3|       |//  TPKeyboardAvoiding
+    4|       |//
+    5|       |//  Created by Michael Tyson on 30/09/2013.
+    6|       |//  Copyright 2015 A Tasty Pixel. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |#import "TPKeyboardAvoidingTableView.h"
+   10|       |
+   11|       |@interface TPKeyboardAvoidingTableView () <UITextFieldDelegate, UITextViewDelegate>
+   12|       |@end
+   13|       |
+   14|       |@implementation TPKeyboardAvoidingTableView
+   15|       |
+   16|       |#pragma mark - Setup/Teardown
+   17|       |
+   18|      0|- (void)setup {
+   19|      0|    if ( [self hasAutomaticKeyboardAvoidingBehaviour] ) return;
+   20|      0|    
+   21|      0|    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(TPKeyboardAvoiding_keyboardWillShow:) name:UIKeyboardWillChangeFrameNotification object:nil];
+   22|      0|    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(TPKeyboardAvoiding_keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+   23|      0|    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(scrollToActiveTextField) name:UITextViewTextDidBeginEditingNotification object:nil];
+   24|      0|    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(scrollToActiveTextField) name:UITextFieldTextDidBeginEditingNotification object:nil];
+   25|      0|}
+   26|       |
+   27|      0|-(id)initWithFrame:(CGRect)frame {
+   28|      0|    if ( !(self = [super initWithFrame:frame]) ) return nil;
+   29|      0|    [self setup];
+   30|      0|    return self;
+   31|      0|}
+   32|       |
+   33|      0|-(id)initWithFrame:(CGRect)frame style:(UITableViewStyle)withStyle {
+   34|      0|    if ( !(self = [super initWithFrame:frame style:withStyle]) ) return nil;
+   35|      0|    [self setup];
+   36|      0|    return self;
+   37|      0|}
+   38|       |
+   39|      0|-(void)awakeFromNib {
+   40|      0|    [super awakeFromNib];
+   41|      0|    [self setup];
+   42|      0|}
+   43|       |
+   44|      0|-(void)dealloc {
+   45|      0|    [[NSNotificationCenter defaultCenter] removeObserver:self];
+   46|      0|#if !__has_feature(objc_arc)
+   47|      0|    [super dealloc];
+   48|      0|#endif
+   49|      0|}
+   50|       |
+   51|      0|-(BOOL)hasAutomaticKeyboardAvoidingBehaviour {
+   52|      0|    if ( [self.delegate isKindOfClass:[UITableViewController class]] ) {
+   53|      0|        // Theory: Apps built using the iOS 8.3 SDK (probably: older SDKs not tested) seem to handle keyboard
+   54|      0|        // avoiding automatically with UITableViewController. This doesn't seem to be documented anywhere
+   55|      0|        // by Apple, so results obtained only empirically.
+   56|      0|        return YES;
+   57|      0|    }
+   58|      0|
+   59|      0|    return NO;
+   60|      0|}
+   61|       |
+   62|      0|-(void)setFrame:(CGRect)frame {
+   63|      0|    [super setFrame:frame];
+   64|      0|    if ( [self hasAutomaticKeyboardAvoidingBehaviour] ) return;
+   65|      0|    [self TPKeyboardAvoiding_updateContentInset];
+   66|      0|}
+   67|       |
+   68|      0|-(void)setContentSize:(CGSize)contentSize {
+   69|      0|    if ( [self hasAutomaticKeyboardAvoidingBehaviour] ) {
+   70|      0|        [super setContentSize:contentSize];
+   71|      0|        return;
+   72|      0|    }
+   73|      0|	if (CGSizeEqualToSize(contentSize, self.contentSize)) {
+   74|      0|		// Prevent triggering contentSize when it's already the same
+   75|      0|		// this cause table view to scroll to top on contentInset changes
+   76|      0|		return;
+   77|      0|	}
+   78|      0|    [super setContentSize:contentSize];
+   79|      0|    [self TPKeyboardAvoiding_updateContentInset];
+   80|      0|}
+   81|       |
+   82|      0|- (BOOL)focusNextTextField {
+   83|      0|    return [self TPKeyboardAvoiding_focusNextTextField];
+   84|      0|    
+   85|      0|}
+   86|      0|- (void)scrollToActiveTextField {
+   87|      0|    return [self TPKeyboardAvoiding_scrollToActiveTextField];
+   88|      0|}
+   89|       |
+   90|       |#pragma mark - Responders, events
+   91|       |
+   92|      0|-(void)willMoveToSuperview:(UIView *)newSuperview {
+   93|      0|    [super willMoveToSuperview:newSuperview];
+   94|      0|    if ( !newSuperview ) {
+   95|      0|        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(TPKeyboardAvoiding_assignTextDelegateForViewsBeneathView:) object:self];
+   96|      0|    }
+   97|      0|}
+   98|       |
+   99|      0|- (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+  100|      0|    [[self TPKeyboardAvoiding_findFirstResponderBeneathView:self] resignFirstResponder];
+  101|      0|    [super touchesEnded:touches withEvent:event];
+  102|      0|}
+  103|       |
+  104|      0|-(BOOL)textFieldShouldReturn:(UITextField *)textField {
+  105|      0|    if ( ![self focusNextTextField] ) {
+  106|      0|        [textField resignFirstResponder];
+  107|      0|    }
+  108|      0|    return YES;
+  109|      0|}
+  110|       |
+  111|      0|-(void)layoutSubviews {
+  112|      0|    [super layoutSubviews];
+  113|      0|    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(TPKeyboardAvoiding_assignTextDelegateForViewsBeneathView:) object:self];
+  114|      0|    [self performSelector:@selector(TPKeyboardAvoiding_assignTextDelegateForViewsBeneathView:) withObject:self afterDelay:0.1];
+  115|      0|}
+  116|       |
+  117|       |@end
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Pods/TPKeyboardAvoiding/TPKeyboardAvoiding/UIScrollView+TPKeyboardAvoidingAdditions.m:
+    1|       |//
+    2|       |//  UIScrollView+TPKeyboardAvoidingAdditions.m
+    3|       |//  TPKeyboardAvoiding
+    4|       |//
+    5|       |//  Created by Michael Tyson on 30/09/2013.
+    6|       |//  Copyright 2015 A Tasty Pixel. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |#import "UIScrollView+TPKeyboardAvoidingAdditions.h"
+   10|       |#import "TPKeyboardAvoidingScrollView.h"
+   11|       |#import <objc/runtime.h>
+   12|       |
+   13|       |static const CGFloat kCalculatedContentPadding = 10;
+   14|       |static const CGFloat kMinimumScrollOffsetPadding = 20;
+   15|       |
+   16|       |static NSString * const kUIKeyboardAnimationDurationUserInfoKey = @"UIKeyboardAnimationDurationUserInfoKey";
+   17|       |
+   18|       |static const int kStateKey;
+   19|       |
+   20|      0|#define _UIKeyboardFrameEndUserInfoKey (&UIKeyboardFrameEndUserInfoKey != NULL ? UIKeyboardFrameEndUserInfoKey : @"UIKeyboardBoundsUserInfoKey")
+   21|       |
+   22|       |@interface TPKeyboardAvoidingState : NSObject
+   23|       |@property (nonatomic, assign) UIEdgeInsets priorInset;
+   24|       |@property (nonatomic, assign) UIEdgeInsets priorScrollIndicatorInsets;
+   25|       |@property (nonatomic, assign) BOOL         keyboardVisible;
+   26|       |@property (nonatomic, assign) CGRect       keyboardRect;
+   27|       |@property (nonatomic, assign) CGSize       priorContentSize;
+   28|       |@property (nonatomic, assign) BOOL         priorPagingEnabled;
+   29|       |@property (nonatomic, assign) BOOL         ignoringNotifications;
+   30|       |@property (nonatomic, assign) BOOL         keyboardAnimationInProgress;
+   31|       |@property (nonatomic, assign) CGFloat      animationDuration;
+   32|       |@end
+   33|       |
+   34|       |@implementation UIScrollView (TPKeyboardAvoidingAdditions)
+   35|       |
+   36|      8|- (TPKeyboardAvoidingState*)keyboardAvoidingState {
+   37|      8|    TPKeyboardAvoidingState *state = objc_getAssociatedObject(self, &kStateKey);
+   38|      8|    if ( !state ) {
+   39|      5|        state = [[TPKeyboardAvoidingState alloc] init];
+   40|      5|        objc_setAssociatedObject(self, &kStateKey, state, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+   41|      5|#if !__has_feature(objc_arc)
+   42|      5|        [state release];
+   43|      5|#endif
+   44|      5|    }
+   45|      8|    return state;
+   46|      8|}
+   47|       |
+   48|      0|- (void)TPKeyboardAvoiding_keyboardWillShow:(NSNotification*)notification {
+   49|      0|    NSDictionary *info = [notification userInfo];
+   50|      0|    TPKeyboardAvoidingState *state = self.keyboardAvoidingState;
+   51|      0|    
+   52|      0|    state.animationDuration = [[info objectForKey:kUIKeyboardAnimationDurationUserInfoKey] doubleValue];
+   53|      0|
+   54|      0|    CGRect keyboardRect = [self convertRect:[[info objectForKey:_UIKeyboardFrameEndUserInfoKey] CGRectValue] fromView:nil];
+   55|      0|    if (CGRectIsEmpty(keyboardRect)) {
+   56|      0|        return;
+   57|      0|    }
+   58|      0|    
+   59|      0|    if ( state.ignoringNotifications ) {
+   60|      0|        return;
+   61|      0|    }
+   62|      0|
+   63|      0|    state.keyboardRect = keyboardRect;
+   64|      0|
+   65|      0|    if ( !state.keyboardVisible ) {
+   66|      0|        state.priorInset = self.contentInset;
+   67|      0|        state.priorScrollIndicatorInsets = self.scrollIndicatorInsets;
+   68|      0|        state.priorPagingEnabled = self.pagingEnabled;
+   69|      0|    }
+   70|      0|
+   71|      0|    state.keyboardVisible = YES;
+   72|      0|    self.pagingEnabled = NO;
+   73|      0|
+   74|      0|    if ( [self isKindOfClass:[TPKeyboardAvoidingScrollView class]] ) {
+   75|      0|        state.priorContentSize = self.contentSize;
+   76|      0|
+   77|      0|        if ( CGSizeEqualToSize(self.contentSize, CGSizeZero) ) {
+   78|      0|            // Set the content size, if it's not set. Do not set content size explicitly if auto-layout
+   79|      0|            // is being used to manage subviews
+   80|      0|            self.contentSize = [self TPKeyboardAvoiding_calculatedContentSizeFromSubviewFrames];
+   81|      0|        }
+   82|      0|    }
+   83|      0|    
+   84|      0|    // Delay until a future run loop such that the cursor position is available in a text view
+   85|      0|    // In other words, it's not available (specifically, the prior cursor position is returned) when the first keyboard position change notification fires
+   86|      0|    // NOTE: Unfortunately, using dispatch_async(main_queue) did not result in a sufficient-enough delay
+   87|      0|    // for the text view's current cursor position to be available
+   88|      0|    dispatch_time_t delay = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC));
+   89|      0|    dispatch_after(delay, dispatch_get_main_queue(), ^{
+   90|      0|        
+   91|      0|        // Shrink view's inset by the keyboard's height, and scroll to show the text field/view being edited
+   92|      0|        [UIView beginAnimations:nil context:NULL];
+   93|      0|        
+   94|      0|        [UIView setAnimationDelegate:self];
+   95|      0|        [UIView setAnimationWillStartSelector:@selector(keyboardViewAppear:context:)];
+   96|      0|        [UIView setAnimationDidStopSelector:@selector(keyboardViewDisappear:finished:context:)];
+   97|      0|        
+   98|      0|        [UIView setAnimationCurve:[[[notification userInfo] objectForKey:UIKeyboardAnimationCurveUserInfoKey] intValue]];
+   99|      0|        [UIView setAnimationDuration:[[[notification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue]];
+  100|      0|        
+  101|      0|        UIView *firstResponder = [self TPKeyboardAvoiding_findFirstResponderBeneathView:self];
+  102|      0|        if ( firstResponder ) {
+  103|      0|            
+  104|      0|            self.contentInset = [self TPKeyboardAvoiding_contentInsetForKeyboard];
+  105|      0|            
+  106|      0|            CGFloat viewableHeight = self.bounds.size.height - self.contentInset.top - self.contentInset.bottom;
+  107|      0|            [self setContentOffset:CGPointMake(self.contentOffset.x,
+  108|      0|                                               [self TPKeyboardAvoiding_idealOffsetForView:firstResponder
+  109|      0|                                                                     withViewingAreaHeight:viewableHeight])
+  110|      0|                          animated:NO];
+  111|      0|        }
+  112|      0|        
+  113|      0|        self.scrollIndicatorInsets = self.contentInset;
+  114|      0|        [self layoutIfNeeded];
+  115|      0|        
+  116|      0|        [UIView commitAnimations];
+  117|      0|    });
+  118|      0|}
+  119|       |
+  120|      0|- (void)keyboardViewAppear:(NSString *)animationID context:(void *)context {
+  121|      0|    self.keyboardAvoidingState.keyboardAnimationInProgress = true;
+  122|      0|}
+  123|       |
+  124|      0|- (void)keyboardViewDisappear:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context {
+  125|      0|    if (finished.boolValue) {
+  126|      0|        self.keyboardAvoidingState.keyboardAnimationInProgress = false;
+  127|      0|    }
+  128|      0|}
+  129|       |
+  130|      0|- (void)TPKeyboardAvoiding_keyboardWillHide:(NSNotification*)notification {
+  131|      0|    CGRect keyboardRect = [self convertRect:[[[notification userInfo] objectForKey:_UIKeyboardFrameEndUserInfoKey] CGRectValue] fromView:nil];
+  132|      0|    if (CGRectIsEmpty(keyboardRect) && !self.keyboardAvoidingState.keyboardAnimationInProgress) {
+  133|      0|        return;
+  134|      0|    }
+  135|      0|    
+  136|      0|    TPKeyboardAvoidingState *state = self.keyboardAvoidingState;
+  137|      0|    
+  138|      0|    if ( state.ignoringNotifications ) {
+  139|      0|        return;
+  140|      0|    }
+  141|      0|    
+  142|      0|    if ( !state.keyboardVisible ) {
+  143|      0|        return;
+  144|      0|    }
+  145|      0|    
+  146|      0|    state.keyboardRect = CGRectZero;
+  147|      0|    state.keyboardVisible = NO;
+  148|      0|    
+  149|      0|    // Restore dimensions to prior size
+  150|      0|    [UIView beginAnimations:nil context:NULL];
+  151|      0|    [UIView setAnimationCurve:[[[notification userInfo] objectForKey:UIKeyboardAnimationCurveUserInfoKey] intValue]];
+  152|      0|    [UIView setAnimationDuration:[[[notification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue]];
+  153|      0|    
+  154|      0|    if ( [self isKindOfClass:[TPKeyboardAvoidingScrollView class]] ) {
+  155|      0|        self.contentSize = state.priorContentSize;
+  156|      0|    }
+  157|      0|    
+  158|      0|    self.contentInset = state.priorInset;
+  159|      0|    self.scrollIndicatorInsets = state.priorScrollIndicatorInsets;
+  160|      0|    self.pagingEnabled = state.priorPagingEnabled;
+  161|      0|	[self layoutIfNeeded];
+  162|      0|    [UIView commitAnimations];
+  163|      0|}
+  164|       |
+  165|      5|- (void)TPKeyboardAvoiding_updateContentInset {
+  166|      5|    TPKeyboardAvoidingState *state = self.keyboardAvoidingState;
+  167|      5|    if ( state.keyboardVisible ) {
+  168|      0|        self.contentInset = [self TPKeyboardAvoiding_contentInsetForKeyboard];
+  169|      0|    }
+  170|      5|}
+  171|       |
+  172|      3|- (void)TPKeyboardAvoiding_updateFromContentSizeChange {
+  173|      3|    TPKeyboardAvoidingState *state = self.keyboardAvoidingState;
+  174|      3|    if ( state.keyboardVisible ) {
+  175|      0|		state.priorContentSize = self.contentSize;
+  176|      0|        self.contentInset = [self TPKeyboardAvoiding_contentInsetForKeyboard];
+  177|      0|    }
+  178|      3|}
+  179|       |
+  180|       |#pragma mark - Utilities
+  181|       |
+  182|      0|- (BOOL)TPKeyboardAvoiding_focusNextTextField {
+  183|      0|    UIView *firstResponder = [self TPKeyboardAvoiding_findFirstResponderBeneathView:self];
+  184|      0|    if ( !firstResponder ) {
+  185|      0|        return NO;
+  186|      0|    }
+  187|      0|    
+  188|      0|    UIView *view = [self TPKeyboardAvoiding_findNextInputViewAfterView:firstResponder beneathView:self];
+  189|      0|    
+  190|      0|    if ( view ) {
+  191|      0|        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue(), ^{
+  192|      0|            TPKeyboardAvoidingState *state = self.keyboardAvoidingState;
+  193|      0|            state.ignoringNotifications = YES;
+  194|      0|            [view becomeFirstResponder];
+  195|      0|            state.ignoringNotifications = NO;
+  196|      0|        });
+  197|      0|        return YES;
+  198|      0|    }
+  199|      0|    
+  200|      0|    return NO;
+  201|      0|}
+  202|       |
+  203|      0|-(void)TPKeyboardAvoiding_scrollToActiveTextField {
+  204|      0|    TPKeyboardAvoidingState *state = self.keyboardAvoidingState;
+  205|      0|    
+  206|      0|    if ( !state.keyboardVisible ) return;
+  207|      0|    
+  208|      0|    UIView *firstResponder = [self TPKeyboardAvoiding_findFirstResponderBeneathView:self];
+  209|      0|    if ( !firstResponder ) {
+  210|      0|        return;
+  211|      0|    }
+  212|      0|    // Ignore any keyboard notification that occur while we scroll
+  213|      0|    //  (seems to be an iOS 9 bug that causes jumping text in UITextField)
+  214|      0|    state.ignoringNotifications = YES;
+  215|      0|    
+  216|      0|    CGFloat visibleSpace = self.bounds.size.height - self.contentInset.top - self.contentInset.bottom;
+  217|      0|    
+  218|      0|    CGPoint idealOffset
+  219|      0|        = CGPointMake(self.contentOffset.x,
+  220|      0|                      [self TPKeyboardAvoiding_idealOffsetForView:firstResponder
+  221|      0|                                            withViewingAreaHeight:visibleSpace]);
+  222|      0|
+  223|      0|    // Ordinarily we'd use -setContentOffset:animated:YES here, but it interferes with UIScrollView
+  224|      0|    // behavior which automatically ensures that the first responder is within its bounds
+  225|      0|    [UIView animateWithDuration:state.animationDuration animations:^{
+  226|      0|        self.contentOffset = idealOffset;
+  227|      0|    } completion:^(BOOL finished) {
+  228|      0|        state.ignoringNotifications = NO;
+  229|      0|    }];
+  230|      0|}
+  231|       |
+  232|       |#pragma mark - Helpers
+  233|       |
+  234|      0|- (UIView*)TPKeyboardAvoiding_findFirstResponderBeneathView:(UIView*)view {
+  235|      0|    // Search recursively for first responder
+  236|      0|    for ( UIView *childView in view.subviews ) {
+  237|      0|        if ( [childView respondsToSelector:@selector(isFirstResponder)] && [childView isFirstResponder] ) return childView;
+  238|      0|        UIView *result = [self TPKeyboardAvoiding_findFirstResponderBeneathView:childView];
+  239|      0|        if ( result ) return result;
+  240|      0|    }
+  241|      0|    return nil;
+  242|      0|}
+  243|       |
+  244|      0|- (UIView*)TPKeyboardAvoiding_findNextInputViewAfterView:(UIView*)priorView beneathView:(UIView*)view {
+  245|      0|    UIView * candidate = nil;
+  246|      0|    [self TPKeyboardAvoiding_findNextInputViewAfterView:priorView beneathView:view bestCandidate:&candidate];
+  247|      0|    return candidate;
+  248|      0|}
+  249|       |
+  250|      0|- (void)TPKeyboardAvoiding_findNextInputViewAfterView:(UIView*)priorView beneathView:(UIView*)view bestCandidate:(UIView**)bestCandidate {
+  251|      0|    // Search recursively for input view below/to right of priorTextField
+  252|      0|    CGRect priorFrame = [self convertRect:priorView.frame fromView:priorView.superview];
+  253|      0|    CGRect candidateFrame = *bestCandidate ? [self convertRect:(*bestCandidate).frame fromView:(*bestCandidate).superview] : CGRectZero;
+  254|      0|    CGFloat bestCandidateHeuristic = [self TPKeyboardAvoiding_nextInputViewHeuristicForViewFrame:candidateFrame];
+  255|      0|    
+  256|      0|    for ( UIView *childView in view.subviews ) {
+  257|      0|        if ( [self TPKeyboardAvoiding_viewIsValidKeyViewCandidate:childView] ) {
+  258|      0|            CGRect frame = [self convertRect:childView.frame fromView:view];
+  259|      0|            
+  260|      0|            // Use a heuristic to evaluate candidates
+  261|      0|            CGFloat heuristic = [self TPKeyboardAvoiding_nextInputViewHeuristicForViewFrame:frame];
+  262|      0|            
+  263|      0|            // Find views beneath, or to the right. For those views that match, choose the view closest to the top left
+  264|      0|            if ( childView != priorView
+  265|      0|                    && ((fabs(CGRectGetMinY(frame) - CGRectGetMinY(priorFrame)) < FLT_EPSILON && CGRectGetMinX(frame) > CGRectGetMinX(priorFrame))
+  266|      0|                        || CGRectGetMinY(frame) > CGRectGetMinY(priorFrame))
+  267|      0|                    && (!*bestCandidate || heuristic > bestCandidateHeuristic) ) {
+  268|      0|                
+  269|      0|                *bestCandidate = childView;
+  270|      0|                bestCandidateHeuristic = heuristic;
+  271|      0|            }
+  272|      0|        } else {
+  273|      0|            [self TPKeyboardAvoiding_findNextInputViewAfterView:priorView beneathView:childView bestCandidate:bestCandidate];
+  274|      0|        }
+  275|      0|    }
+  276|      0|}
+  277|       |
+  278|      0|- (CGFloat)TPKeyboardAvoiding_nextInputViewHeuristicForViewFrame:(CGRect)frame {
+  279|      0|    return  (-frame.origin.y * 1000.0) // Prefer elements closest to top (most important)
+  280|      0|          + (-frame.origin.x);         // Prefer elements closest to left
+  281|      0|}
+  282|       |
+  283|      0|- (BOOL)TPKeyboardAvoiding_viewHiddenOrUserInteractionNotEnabled:(UIView *)view {
+  284|      0|    while ( view ) {
+  285|      0|        if ( view.hidden || !view.userInteractionEnabled ) {
+  286|      0|            return YES;
+  287|      0|        }
+  288|      0|        view = view.superview;
+  289|      0|    }
+  290|      0|    return NO;
+  291|      0|}
+  292|       |
+  293|      0|- (BOOL)TPKeyboardAvoiding_viewIsValidKeyViewCandidate:(UIView *)view {
+  294|      0|    if ( [self TPKeyboardAvoiding_viewHiddenOrUserInteractionNotEnabled:view] ) return NO;
+  295|      0|    
+  296|      0|    if ( [view isKindOfClass:[UITextField class]] && ((UITextField*)view).enabled ) {
+  297|      0|        return YES;
+  298|      0|    }
+  299|      0|    
+  300|      0|    if ( [view isKindOfClass:[UITextView class]] && ((UITextView*)view).isEditable ) {
+  301|      0|        return YES;
+  302|      0|    }
+  303|      0|    
+  304|      0|    return NO;
+  305|      0|}
+  306|       |
+  307|     36|- (void)TPKeyboardAvoiding_assignTextDelegateForViewsBeneathView:(UIView*)view {
+  308|     39|    for ( UIView *childView in view.subviews ) {
+  309|     39|        if ( ([childView isKindOfClass:[UITextField class]] || [childView isKindOfClass:[UITextView class]]) ) {
+  310|      6|            [self TPKeyboardAvoiding_initializeView:childView];
+  311|     33|        } else {
+  312|     33|            [self TPKeyboardAvoiding_assignTextDelegateForViewsBeneathView:childView];
+  313|     33|        }
+  314|     39|    }
+  315|     36|}
+  316|       |
+  317|      0|-(CGSize)TPKeyboardAvoiding_calculatedContentSizeFromSubviewFrames {
+  318|      0|    
+  319|      0|    BOOL wasShowingVerticalScrollIndicator = self.showsVerticalScrollIndicator;
+  320|      0|    BOOL wasShowingHorizontalScrollIndicator = self.showsHorizontalScrollIndicator;
+  321|      0|    
+  322|      0|    self.showsVerticalScrollIndicator = NO;
+  323|      0|    self.showsHorizontalScrollIndicator = NO;
+  324|      0|    
+  325|      0|    CGRect rect = CGRectZero;
+  326|      0|    for ( UIView *view in self.subviews ) {
+  327|      0|        rect = CGRectUnion(rect, view.frame);
+  328|      0|    }
+  329|      0|    rect.size.height += kCalculatedContentPadding;
+  330|      0|    
+  331|      0|    self.showsVerticalScrollIndicator = wasShowingVerticalScrollIndicator;
+  332|      0|    self.showsHorizontalScrollIndicator = wasShowingHorizontalScrollIndicator;
+  333|      0|    
+  334|      0|    return rect.size;
+  335|      0|}
+  336|       |
+  337|       |
+  338|      0|- (UIEdgeInsets)TPKeyboardAvoiding_contentInsetForKeyboard {
+  339|      0|    TPKeyboardAvoidingState *state = self.keyboardAvoidingState;
+  340|      0|    UIEdgeInsets newInset = self.contentInset;
+  341|      0|    CGRect keyboardRect = state.keyboardRect;
+  342|      0|    newInset.bottom = keyboardRect.size.height - MAX((CGRectGetMaxY(keyboardRect) - CGRectGetMaxY(self.bounds)), 0);
+  343|      0|    return newInset;
+  344|      0|}
+  345|       |
+  346|      0|-(CGFloat)TPKeyboardAvoiding_idealOffsetForView:(UIView *)view withViewingAreaHeight:(CGFloat)viewAreaHeight {
+  347|      0|    CGSize contentSize = self.contentSize;
+  348|      0|    __block CGFloat offset = 0.0;
+  349|      0|
+  350|      0|    CGRect subviewRect = [view convertRect:view.bounds toView:self];
+  351|      0|
+  352|      0|    __block CGFloat padding = 0.0;
+  353|      0|    __block UIEdgeInsets contentInset;
+  354|      0|    
+  355|      0|#ifdef __IPHONE_11_0
+  356|      0|    if (@available(iOS 11.0, *)) {
+  357|      0|        contentInset = self.adjustedContentInset;
+  358|      0|    } else {
+  359|      0|        contentInset = self.contentInset;
+  360|      0|    }
+  361|       |#else
+  362|       |    contentInset = self.contentInset;
+  363|       |#endif
+  364|       |
+  365|      0|    void(^centerViewInViewableArea)(void)  = ^ {
+  366|      0|        // Attempt to center the subview in the visible space
+  367|      0|        padding = (viewAreaHeight - subviewRect.size.height) / 2;
+  368|      0|
+  369|      0|        // But if that means there will be less than kMinimumScrollOffsetPadding
+  370|      0|        // pixels above the view, then substitute kMinimumScrollOffsetPadding
+  371|      0|        if (padding < kMinimumScrollOffsetPadding ) {
+  372|      0|            padding = kMinimumScrollOffsetPadding;
+  373|      0|        }
+  374|      0|
+  375|      0|        // Ideal offset places the subview rectangle origin "padding" points from the top of the scrollview.
+  376|      0|        // If there is a top contentInset, also compensate for this so that subviewRect will not be placed under
+  377|      0|        // things like navigation bars.
+  378|      0|        offset = subviewRect.origin.y - padding - contentInset.top;
+  379|      0|    };
+  380|      0|
+  381|      0|    // If possible, center the caret in the visible space. Otherwise, center the entire view in the visible space.
+  382|      0|    if ([view conformsToProtocol:@protocol(UITextInput)]) {
+  383|      0|        UIView <UITextInput> *textInput = (UIView <UITextInput>*)view;
+  384|      0|        UITextPosition *caretPosition = [textInput selectedTextRange].start;
+  385|      0|        if (caretPosition) {
+  386|      0|            CGRect caretRect = [self convertRect:[textInput caretRectForPosition:caretPosition] fromView:textInput];
+  387|      0|
+  388|      0|            // Attempt to center the cursor in the visible space
+  389|      0|            // pixels above the view, then substitute kMinimumScrollOffsetPadding
+  390|      0|            padding = (viewAreaHeight - caretRect.size.height) / 2;
+  391|      0|
+  392|      0|            // But if that means there will be less than kMinimumScrollOffsetPadding
+  393|      0|            // pixels above the view, then substitute kMinimumScrollOffsetPadding
+  394|      0|            if (padding < kMinimumScrollOffsetPadding ) {
+  395|      0|                padding = kMinimumScrollOffsetPadding;
+  396|      0|            }
+  397|      0|
+  398|      0|            // Ideal offset places the subview rectangle origin "padding" points from the top of the scrollview.
+  399|      0|            // If there is a top contentInset, also compensate for this so that subviewRect will not be placed under
+  400|      0|            // things like navigation bars.
+  401|      0|            offset = caretRect.origin.y - padding - contentInset.top;
+  402|      0|        } else {
+  403|      0|            centerViewInViewableArea();
+  404|      0|        }
+  405|      0|    } else {
+  406|      0|        centerViewInViewableArea();
+  407|      0|    }
+  408|      0|    
+  409|      0|    // Constrain the new contentOffset so we can't scroll past the bottom. Note that we don't take the bottom
+  410|      0|    // inset into account, as this is manipulated to make space for the keyboard.
+  411|      0|    CGFloat maxOffset = contentSize.height - viewAreaHeight - contentInset.top;
+  412|      0|    if (offset > maxOffset) {
+  413|      0|        offset = maxOffset;
+  414|      0|    }
+  415|      0|    
+  416|      0|    // Constrain the new contentOffset so we can't scroll past the top, taking contentInsets into account
+  417|      0|    if ( offset < -contentInset.top ) {
+  418|      0|        offset = -contentInset.top;
+  419|      0|    }
+  420|      0|
+  421|      0|    return offset;
+  422|      0|}
+  423|       |
+  424|      6|- (void)TPKeyboardAvoiding_initializeView:(UIView*)view {
+  425|      6|    if ( [view isKindOfClass:[UITextField class]]
+  426|      6|            && (((UITextField*)view).returnKeyType == UIReturnKeyDefault || (((UITextField*)view).returnKeyType == UIReturnKeyNext))
+  427|      6|            && (![(UITextField*)view delegate] || [(UITextField*)view delegate] == (id<UITextFieldDelegate>)self) ) {
+  428|      0|        [(UITextField*)view setDelegate:(id<UITextFieldDelegate>)self];
+  429|      0|        UIView *otherView = [self TPKeyboardAvoiding_findNextInputViewAfterView:view beneathView:self];
+  430|      0|        
+  431|      0|        if ( otherView ) {
+  432|      0|            ((UITextField*)view).returnKeyType = UIReturnKeyNext;
+  433|      0|        } else {
+  434|      0|            ((UITextField*)view).returnKeyType = UIReturnKeyDone;
+  435|      0|        }
+  436|      0|    }
+  437|      6|}
+  438|       |
+  439|       |@end
+  440|       |
+  441|       |
+  442|       |@implementation TPKeyboardAvoidingState
+  443|       |@end
+

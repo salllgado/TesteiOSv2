@@ -1,0 +1,1614 @@
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/AppDelegate.swift:
+    1|       |//
+    2|       |//  AppDelegate.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian on 21/11/18.
+    6|       |//  Copyright © 2018 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import UIKit
+   10|       |import WatchConnectivity
+   11|       |
+   12|       |@UIApplicationMain
+   13|       |class AppDelegate: UIResponder, UIApplicationDelegate, WCSessionDelegate {
+   14|       |
+   15|       |    var window: UIWindow?
+   16|       |
+   17|       |
+   18|      2|    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+   19|      2|        configureWatchConnectivity()
+   20|      2|        
+   21|      2|        return true
+   22|      2|    }
+   23|       |
+   24|      0|    func applicationWillResignActive(_ application: UIApplication) {
+   25|      0|        // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
+   26|      0|        // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
+   27|      0|    }
+   28|       |
+   29|      0|    func applicationDidEnterBackground(_ application: UIApplication) {
+   30|      0|        // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
+   31|      0|        // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+   32|      0|    }
+   33|       |
+   34|      0|    func applicationWillEnterForeground(_ application: UIApplication) {
+   35|      0|        // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
+   36|      0|    }
+   37|       |
+   38|      2|    func applicationDidBecomeActive(_ application: UIApplication) {
+   39|      2|        // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+   40|      2|    }
+   41|       |
+   42|      0|    func applicationWillTerminate(_ application: UIApplication) {
+   43|      0|        // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+   44|      0|        // Saves changes in the application's managed object context before the application terminates.
+   45|      0|    }
+   46|       |}
+   47|       |
+   48|       |extension AppDelegate {
+   49|       |    
+   50|      2|    fileprivate func configureWatchConnectivity() {
+   51|      2|        if WCSession.isSupported() {
+   52|      2|            WCSession.default.delegate = self
+   53|      2|            WCSession.default.activate()
+   54|      2|        }
+   55|      2|    }
+   56|       |    
+   57|       |    @available(iOS 9.3, *)
+   58|      2|    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
+   59|      2|        switch activationState {
+   60|      2|        case .activated:
+   61|      2|            print("Conectivity has been activated")
+   62|      2|        default:
+   63|      0|            print("Some error is occour \(error!.localizedDescription)")
+   64|      2|        }
+   65|      2|    }
+   66|       |    
+   67|      0|    func sessionDidBecomeInactive(_ session: WCSession) {
+   68|      0|        // ...
+   69|      0|    }
+   70|       |    
+   71|      0|    func sessionDidDeactivate(_ session: WCSession) {
+   72|      0|        // ...
+   73|      0|    }
+   74|       |    
+   75|      0|    func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any] = [:]) {
+   76|      0|        // ...
+   77|      0|    }
+   78|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/BankAPI.swift:
+    1|       |//
+    2|       |//  BankAPI.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 29/12/2018.
+    6|       |//  Copyright © 2018 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |
+   11|       |class BankAPI: BankAPIProtocol {
+   12|       |    
+   13|       |    /**
+   14|       |     * Documentation for this class:
+   15|       |     * https://hackernoon.com/everything-about-codable-in-swift-4-97d0e18a2999
+   16|       |     * https://www.raywenderlich.com/567-urlsession-tutorial-getting-started
+   17|       |     * https://medium.com/@sdrzn/networking-and-persistence-with-json-in-swift-4-c400ecab402d
+   18|       |     */
+   19|       |    
+   20|       |    var urlHost = "bank-app-test.herokuapp.com"
+   21|       |    var urlScheme = "https"
+   22|       |    var urlPath = ""
+   23|       |    
+   24|      1|    func loginUser(login: UserLogin, completionHandler: @escaping (UserResponse?) -> Void) {
+   25|      1|        
+   26|      1|        let encoder = JSONEncoder()
+   27|      1|        let jsonData = try? encoder.encode(login)
+   28|      1|        
+   29|      1|        // try request
+   30|      1|        urlPath = "/api/login"
+   31|      1|        urlRequest(type: .post, params: jsonData) { (responseData) in
+   32|      0|            if let jsonData = responseData {
+   33|      0|                do {
+   34|      0|                    let response = try JSONDecoder().decode(UserResponse.self, from: jsonData)
+   35|      0|                    if let bankError = response.error, bankError.code != nil {
+   36|      0|                        completionHandler(response)
+   37|      0|                        print(bankError)
+   38|      0|                    }
+   39|      0|                    else if let _ = response.userAccount {
+   40|      0|                        completionHandler(response)
+   41|      0|                    }
+   42|      0|                } catch {
+   43|      0|                    self.catchNetworkError(responseData)
+   44|      0|                    completionHandler(nil)
+   45|      0|                }
+   46|      0|            }
+   47|      0|            else {
+   48|      0|                self.catchNetworkError(responseData)
+   49|      0|                completionHandler(nil)
+   50|      0|            }
+   51|      0|        }
+   52|      1|    }
+   53|       |    
+   54|      0|    func statementList(by userId: Int, completionHandler: @escaping (StatementResponse?) -> Void) {
+   55|      0|        
+   56|      0|        // try request
+   57|      0|        urlPath = "/api/statements/\(userId)"
+   58|      0|        urlRequest(type: .get, params: nil) { (responseData) in
+   59|      0|            if let jsonData = responseData {
+   60|      0|                do {
+   61|      0|                    let response = try JSONDecoder().decode(StatementResponse.self, from: jsonData)
+   62|      0|                    if let bankError = response.error, bankError.code != nil {
+   63|      0|                        completionHandler(response)
+   64|      0|                        print(bankError)
+   65|      0|                    }
+   66|      0|                    else if let _ = response.statementList {
+   67|      0|                        completionHandler(response)
+   68|      0|                    }
+   69|      0|                } catch {
+   70|      0|                    self.catchNetworkError(responseData)
+   71|      0|                    completionHandler(nil)
+   72|      0|                }
+   73|      0|            }
+   74|      0|            else {
+   75|      0|                self.catchNetworkError(responseData)
+   76|      0|                completionHandler(nil)
+   77|      0|            }
+   78|      0|        }
+   79|      0|    }
+   80|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/BankAPINetwork.swift:
+    1|       |//
+    2|       |//  BankAPINetwork.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 02/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |
+   11|       |enum RequestType: String {
+   12|       |    case get = "GET"
+   13|       |    case post = "POST"
+   14|       |    case put = "PUT"
+   15|       |}
+   16|       |
+   17|       |extension BankAPI {
+   18|       |    
+   19|      1|    func urlRequest(type: RequestType, params: Any?, completionHandler: @escaping (Data?) -> Void) {
+   20|      1|        
+   21|      1|        var urlComponents = URLComponents()
+   22|      1|        urlComponents.scheme = urlScheme
+   23|      1|        urlComponents.host = urlHost
+   24|      1|        urlComponents.path = urlPath
+   25|      1|        
+   26|      1|        if let url = urlComponents.url {
+   27|      1|            var request = URLRequest(url: url)
+   28|      1|            request.httpMethod = type.rawValue
+   29|      1|            
+   30|      1|            var headers = request.allHTTPHeaderFields ?? [:]
+   31|      1|            headers["Content-Type"] = "application/json"
+   32|      1|            request.allHTTPHeaderFields = headers
+   33|      1|            
+   34|      1|            if let _params = params, type == .post {
+   35|      1|                request.httpBody = _params as? Data
+   36|      1|            } else if let _params = params, type == .get {
+   37|      0|                urlComponents.queryItems = _params as? [URLQueryItem]
+   38|      1|            }
+   39|      1|            
+   40|      1|            print(request)
+   41|      1|            
+   42|      1|            let session = URLSession(configuration: .default)
+   43|      1|            let task = session.dataTask(with: request) { (data, urlResponse, taskError) in
+   44|      0|                DispatchQueue.main.async {
+   45|      0|                    
+   46|      0|                    if let _error = taskError {
+   47|      0|                        print(_error)
+   48|      0|                        completionHandler(nil)
+   49|      0|                        
+   50|      0|                    } else if let jsonData = data {
+   51|      0|                        completionHandler(jsonData)
+   52|      0|                    }
+   53|      0|                }
+   54|      0|            }
+   55|      1|            task.resume()
+   56|      1|        }
+   57|      1|        else {
+   58|      0|            fatalError("Could not create URL from components")
+   59|      1|        }
+   60|      1|    }
+   61|       |    
+   62|      0|    func catchNetworkError(_ data: Data?) {
+   63|      0|        guard let data = data else { return }
+   64|      0|        let error = try? JSONSerialization.jsonObject(with: data, options: [])
+   65|      0|        print(error)
+   66|      0|    }
+   67|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/BankError.swift:
+    1|       |//
+    2|       |//  BankError.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 30/12/2018.
+    6|       |//  Copyright © 2018 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import UIKit
+   10|       |
+   11|       |struct BankError: Decodable {
+   12|       |    let message: String?
+   13|       |    let code: Int?
+   14|       |    
+   15|      5|    init(message: String, errorCode: Int) {
+   16|      5|        self.message = message
+   17|      5|        self.code = errorCode
+   18|      5|    }
+   19|       |}
+   20|       |
+   21|       |enum BankErrorType {
+   22|       |    case userNotFound
+   23|       |    case userWrong
+   24|       |}
+   25|       |
+   26|       |extension BankErrorType {
+   27|      5|    var error: BankError {
+   28|      5|        switch self {
+   29|      5|        case .userNotFound:
+   30|      4|            return .init(message: NSLocalizedString("ERRO_USUARIO_NAO_ENCONTRADO", comment: ""), errorCode: 417)
+   31|      5|        case .userWrong:
+   32|      1|            return .init(message: NSLocalizedString("ERRO_USUARIO_DADOS_ERRADOS", comment: ""), errorCode: 417)
+   33|      5|        }
+   34|      5|    }
+   35|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/BankHistoryController.swift:
+    1|       |//
+    2|       |//  BankHistoryController.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 24/12/2018.
+    6|       |//  Copyright © 2018 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |import UIKit
+   11|       |
+   12|       |protocol BankHistoryDisplayLogic: class {
+   13|       |    
+   14|       |    func requestElements()
+   15|       |    func displayData(_ statementList: [Statement])
+   16|       |    func showError(_ alertController: UIAlertController)
+   17|       |    func setupStatusBar(statusBarStyle: UIStatusBarStyle, backgroudColor: UIColor?)
+   18|       |}
+   19|       |
+   20|       |class BankHistoryController: UITableViewController, BankHistoryDisplayLogic {
+   21|       |    
+   22|       |    var interactor: BankHistoryBusinessLogic?
+   23|       |    var router: (NSObjectProtocol & BankHistoryRouterLogic & BankHistoryDataPassing)?
+   24|       |    
+   25|      0|    var statementList: [Statement] = []
+   26|       |    
+   27|      0|    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+   28|      0|        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+   29|      0|        setup()
+   30|      0|    }
+   31|       |    
+   32|      0|    required init?(coder aDecoder: NSCoder) {
+   33|      0|        super.init(coder: aDecoder)
+   34|      0|        setup()
+   35|      0|    }
+   36|       |    
+   37|      0|    private func setup() {
+   38|      0|        let viewController = self
+   39|      0|        let interactor = BankHistoryInteractor()
+   40|      0|        let presenter = BankHistoryPresenter()
+   41|      0|        let router = BankHistoryRouter()
+   42|      0|        
+   43|      0|        viewController.interactor = interactor
+   44|      0|        viewController.router = router
+   45|      0|        interactor.presenter = presenter
+   46|      0|        presenter.viewController = viewController
+   47|      0|        router.viewController = viewController
+   48|      0|        router.dataStore = interactor
+   49|      0|    }
+   50|       |    
+   51|       |    // MARK: View lifecycle
+   52|       |    
+   53|      0|    override func viewWillAppear(_ animated: Bool) {
+   54|      0|        super.viewWillAppear(animated)
+   55|      0|        interactor?.configureStatusBar()
+   56|      0|    }
+   57|       |    
+   58|      0|    override func viewDidAppear(_ animated: Bool) {
+   59|      0|        super.viewDidAppear(animated)
+   60|      0|        requestElements()
+   61|      0|    }
+   62|       |    
+   63|      0|    func displayData(_ statementList: [Statement]) {
+   64|      0|        self.statementList = statementList
+   65|      0|        self.tableView.reloadData()
+   66|      0|        
+   67|      0|        guard let userAccount = router?.dataStore?.userAccount else { return }
+   68|      0|        displayHeaderData(userAccount: userAccount)
+   69|      0|    }
+   70|       |    
+   71|      0|    func displayHeaderData(userAccount: UserAccountable) {
+   72|      0|        guard let headerView = tableView.tableHeaderView as? BankHistoryHeaderView else { return }
+   73|      0|        headerView.configure(userAccount)
+   74|      0|    }
+   75|       |    
+   76|      0|    func requestElements() {
+   77|      0|        guard let userAccount = router?.dataStore?.userAccount else { return }
+   78|      0|        interactor?.getStatementList(by: userAccount)
+   79|      0|    }
+   80|       |    
+   81|      0|    func showError(_ alertController: UIAlertController) {
+   82|      0|        self.present(alertController, animated: true, completion: nil)
+   83|      0|    }
+   84|       |    
+   85|      0|    func setupStatusBar(statusBarStyle: UIStatusBarStyle, backgroudColor: UIColor?) {
+   86|      0|        self.setStatusBarStyle(statusBarStyle, backgroundColor: backgroudColor)
+   87|      0|    }
+   88|       |    
+   89|       |    // MARK: Action
+   90|       |    
+   91|      0|    @IBAction func actionLogOut(_ sender: Any) {
+   92|      0|        performSegue(withIdentifier: "unwindToIntroController", sender: nil)
+   93|      0|        interactor?.clearAutoLogin()
+   94|      0|    }
+   95|       |    
+   96|      0|    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+   97|      0|       interactor?.configureStatusBarRelative(to: scrollView.contentOffset.y)
+   98|      0|    }
+   99|       |}
+  100|       |
+  101|       |extension BankHistoryController {
+  102|       |    
+  103|      0|    override func numberOfSections(in tableView: UITableView) -> Int {
+  104|      0|        return statementList.count > 0 ? 1 : 0
+  105|      0|    }
+  106|       |    
+  107|      0|    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+  108|      0|        return statementList.count
+  109|      0|    }
+  110|       |    
+  111|      0|    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+  112|      0|        let cell = tableView.dequeueReusableCell(withIdentifier: "tableViewCell") as? BankHistoryTableViewCell
+  113|      0|        cell?.display(statementList[indexPath.row])
+  114|      0|        return cell ?? UITableViewCell()
+  115|      0|    }
+  116|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/BankHistoryHeaderView.swift:
+    1|       |//
+    2|       |//  BankHistoryHeaderView.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 05/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |import UIKit
+   11|       |
+   12|       |class BankHistoryHeaderView: UIView {
+   13|       |    
+   14|       |    @IBOutlet weak var lbUserName: UILabel!
+   15|       |    @IBOutlet weak var lbUserAccountNumber: UILabel!
+   16|       |    @IBOutlet weak var lbUserBalance: UILabel!
+   17|       |    
+   18|       |    var user: UserAccountData?
+   19|       |    
+   20|      0|    override init(frame: CGRect) {
+   21|      0|        super.init(frame: frame)
+   22|      0|    }
+   23|       |    
+   24|      0|    required init?(coder aDecoder: NSCoder) {
+   25|      0|        super.init(coder: aDecoder)
+   26|      0|    }
+   27|       |    
+   28|      0|    func configure(_ user: UserAccountable) {
+   29|      0|        lbUserName.text = user.name
+   30|      0|        
+   31|      0|        if let _balance = user.balance {
+   32|      0|            lbUserBalance.text = _balance.toStringCurrency()
+   33|      0|        }
+   34|      0|        
+   35|      0|        if let agency = user.agency, let bankAccount = user.bankAccount {
+   36|      0|            lbUserAccountNumber.text = "\(bankAccount) / \(agency)"
+   37|      0|        }
+   38|      0|    }
+   39|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/BankHistoryInteractor.swift:
+    1|       |//
+    2|       |//  BankHistoryInteractor.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 24/12/2018.
+    6|       |//  Copyright © 2018 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |import UIKit
+   11|       |
+   12|       |protocol BankHistoryBusinessLogic {
+   13|       |    
+   14|       |    func getStatementList(by userId: UserAccountable)
+   15|       |    func clearAutoLogin()
+   16|       |    func configureStatusBar()
+   17|       |    func configureStatusBarRelative(to y: CGFloat)
+   18|       |}
+   19|       |
+   20|       |class BankHistoryInteractor: BankHistoryBusinessLogic, UserAccountData {
+   21|       |    
+   22|       |    var userAccount: UserAccountable?
+   23|       |    var presenter: BankHistoryPresentationLogic?
+   24|       |    
+   25|       |    /// Perform request for statementList
+   26|      0|    func getStatementList(by user: UserAccountable) {
+   27|      0|        guard let userId = user.userId else { return }
+   28|      0|        
+   29|      0|        BankWorker().statementList(by: userId) { (statementResponse) in
+   30|      0|            if let bankError = statementResponse?.error, bankError.code != nil {
+   31|      0|                self.presenter?.showError(error: bankError)
+   32|      0|            }
+   33|      0|            else if let statementList = statementResponse?.statementList {
+   34|      0|                self.presenter?.displayStatements(statementList)
+   35|      0|            }
+   36|      0|        }
+   37|      0|    }
+   38|       |    
+   39|      0|    func clearAutoLogin() {
+   40|      0|        KeychainWorker().deleteUser()
+   41|      0|    }
+   42|       |    
+   43|      0|    func configureStatusBar() {
+   44|      0|        let hexColor = Constants.hexColors.purple.rawValue.hexColor()
+   45|      0|        presenter?.configureStatusBar(statusBarStyle: .lightContent, backgroudColor: hexColor)
+   46|      0|    }
+   47|       |    
+   48|      0|    func configureStatusBarRelative(to y: CGFloat) {
+   49|      0|        if y > 216 - getSafeAreaInsets().top || y < (getSafeAreaInsets().top * -1) {
+   50|      0|            presenter?.configureStatusBar(statusBarStyle: .default, backgroudColor: .white)
+   51|      0|        }
+   52|      0|        else {
+   53|      0|            configureStatusBar()
+   54|      0|        }
+   55|      0|    }
+   56|       |}
+   57|       |
+   58|       |extension BankHistoryInteractor {
+   59|       |    
+   60|      0|    func getSafeAreaInsets() -> UIEdgeInsets {
+   61|      0|        if #available(iOS 11.0, *) {
+   62|      0|            return UIApplication.shared.keyWindow?.safeAreaInsets ?? UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+   63|      0|        }
+   64|      0|        else {
+   65|      0|            return UIEdgeInsets(top: 16, left: 0, bottom: 0, right: 0)
+   66|      0|        }
+   67|      0|    }
+   68|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/BankHistoryPresentationLogic.swift:
+    1|       |//
+    2|       |//  BankHistoryPresentationLogic.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 24/12/2018.
+    6|       |//  Copyright © 2018 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import UIKit
+   10|       |
+   11|       |protocol BankHistoryPresentationLogic {
+   12|       |    
+   13|       |    func displayStatements(_ statements: [Statement])
+   14|       |    func showError(error: BankError)
+   15|       |    func configureStatusBar(statusBarStyle: UIStatusBarStyle, backgroudColor: UIColor?)
+   16|       |}
+   17|       |
+   18|       |class BankHistoryPresenter: BankHistoryPresentationLogic {
+   19|       |    
+   20|       |    weak var viewController: BankHistoryDisplayLogic?
+   21|       |    
+   22|      0|    func displayStatements(_ statements: [Statement]) {
+   23|      0|        viewController?.displayData(statements)
+   24|      0|    }
+   25|       |    
+   26|      0|    func showError(error: BankError) {
+   27|      0|        if let errorMessage = error.message {
+   28|      0|            buildAlert(title: "Erro", menssage: errorMessage)
+   29|      0|        }
+   30|      0|    }
+   31|       |    
+   32|      0|    private func buildAlert(title: String, menssage: String) {
+   33|      0|        let alertBox = UIAlertController(title: title, message: menssage, preferredStyle: .alert)
+   34|      0|        let action = UIAlertAction(title: "OK", style: .default) { (action) in
+   35|      0|            alertBox.dismiss(animated: true, completion: {
+   36|      0|                self.viewController?.requestElements()
+   37|      0|            })
+   38|      0|        }
+   39|      0|        alertBox.addAction(action)
+   40|      0|        viewController?.showError(alertBox)
+   41|      0|    }
+   42|       |    
+   43|      0|    func configureStatusBar(statusBarStyle: UIStatusBarStyle, backgroudColor: UIColor?) {
+   44|      0|        viewController?.setupStatusBar(statusBarStyle: statusBarStyle, backgroudColor: backgroudColor)
+   45|      0|    }
+   46|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/BankHistoryRouter.swift:
+    1|       |//
+    2|       |//  BankHistoryRouter.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 27/12/2018.
+    6|       |//  Copyright © 2018 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import UIKit
+   10|       |
+   11|       |@objc protocol BankHistoryRouterLogic {
+   12|       |    
+   13|       |    func routeToIntroController(segue: UIStoryboardSegue?)
+   14|       |}
+   15|       |
+   16|       |protocol BankHistoryDataPassing {
+   17|       |    
+   18|       |    var dataStore: UserAccountData? { get }
+   19|       |}
+   20|       |
+   21|       |class BankHistoryRouter: NSObject, BankHistoryRouterLogic, BankHistoryDataPassing {
+   22|       |    
+   23|       |    var dataStore: UserAccountData?
+   24|       |    weak var viewController: BankHistoryController?
+   25|       |    
+   26|      0|    func routeToIntroController(segue: UIStoryboardSegue?) {
+   27|      0|        // ...
+   28|      0|    }
+   29|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/BankHistoryTableViewCell.swift:
+    1|       |//
+    2|       |//  BankHistoryTableViewCell.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 01/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import UIKit
+   10|       |
+   11|       |class BankHistoryTableViewCell: UITableViewCell {
+   12|       |    
+   13|       |    @IBOutlet weak var lblPaymentTitle: UILabel!
+   14|       |    @IBOutlet weak var lbPaymentDescription: UILabel!
+   15|       |    @IBOutlet weak var lbPaymentDate: UILabel!
+   16|       |    @IBOutlet weak var lbPaymentValue: UILabel!
+   17|       |    
+   18|      0|    func display(_ statement: Statement) {
+   19|      0|        configureElements(statement)
+   20|      0|    }
+   21|       |    
+   22|      0|    private func configureElements(_ statement: Statement) {
+   23|      0|        lblPaymentTitle.text = statement.title
+   24|      0|        lbPaymentDescription.text = statement.description
+   25|      0|        lbPaymentDate.text = formatDate(statement.date)
+   26|      0|        lbPaymentValue.text = "\(statement.value)"
+   27|      0|    }
+   28|       |    
+   29|      0|    private func formatDate(_ date: Date) -> String {
+   30|      0|        let dateFormatter = DateFormatter()
+   31|      0|        dateFormatter.dateFormat = "dd-MM-yyyy"
+   32|      0|        dateFormatter.dateStyle = DateFormatter.Style.short
+   33|      0|        return dateFormatter.string(from: date)
+   34|      0|    }
+   35|       |    
+   36|      0|    override func prepareForReuse() {
+   37|      0|        super.prepareForReuse()
+   38|      0|    }
+   39|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/BankWorker.swift:
+    1|       |//
+    2|       |//  BankWorker.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 29/12/2018.
+    6|       |//  Copyright © 2018 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |
+   11|       |class BankWorker {
+   12|       |    
+   13|       |    var bankStore: BankAPIProtocol
+   14|       |    
+   15|      2|    init() {
+   16|      2|        self.bankStore = BankAPI()
+   17|      2|    }
+   18|       |    
+   19|       |    // Request for login.
+   20|      1|    func userLogin(_ userLogin: UserLogin, completionHandler: @escaping (UserResponse?) -> Void) {
+   21|      1|        bankStore.loginUser(login: userLogin, completionHandler: completionHandler)
+   22|      1|    }
+   23|       |    
+   24|      0|    func statementList(by userId: Int, completionHandler: @escaping (StatementResponse?) -> Void) {
+   25|      0|        bankStore.statementList(by: userId, completionHandler: completionHandler)
+   26|      0|    }
+   27|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/Dictionary+Data.swift:
+    1|       |//
+    2|       |//  Dictionary + Data.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 09/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |
+   11|       |extension Dictionary {
+   12|       |    
+   13|     10|    public func convertToJsonData() throws -> Data {
+   14|     10|        do {
+   15|     10|            let jsonData = try JSONSerialization.data(withJSONObject: self, options: [])
+   16|     10|            return jsonData
+   17|     10|            
+   18|     10|        } catch {
+   19|      0|            throw error
+   20|      0|        }
+   21|      0|    }
+   22|       |    
+   23|      0|    public func convertTojsonValue() throws -> String? {
+   24|      0|        do {
+   25|      0|            let jsonData = try JSONSerialization.data(withJSONObject: self, options: [])
+   26|      0|            let jsonValue = String(data: jsonData, encoding: .utf8)
+   27|      0|            return jsonValue
+   28|      0|        } catch {
+   29|      0|            throw error
+   30|      0|        }
+   31|      0|    }
+   32|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/Double+CurrencyFormatter.swift:
+    1|       |//
+    2|       |//  Double+CurrencyFormatter.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian on 17/01/19.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |import UIKit
+   11|       |
+   12|       |extension Double {
+   13|       |    
+   14|      0|    func toString() -> String {
+   15|      0|        return String(self)
+   16|      0|    }
+   17|       |    
+   18|      8|    func toStringCurrency() -> String {
+   19|      8|        let currencyFormat: String = NSLocalizedString("CURRENCY_FORMAT", comment: "currency")
+   20|      8|        var stringFormated: String = currencyFormat
+   21|      8|        let stringValue = String(format: "%.2f", self)
+   22|      8|        
+   23|     51|        for letter in stringValue {
+   24|     51|            if letter == "." {
+   25|      8|                stringFormated.append(",")
+   26|     51|            }
+   27|     51|            else if letter != "-" {
+   28|     39|                stringFormated.append(letter)
+   29|     51|            }
+   30|     51|        }
+   31|      8|        
+   32|      8|        if stringValue.contains("-") {
+   33|      4|            return "-\(stringFormated)"
+   34|      4|        }
+   35|      4|        else {
+   36|      4|            return "\(stringFormated)"
+   37|      4|        }
+   38|      0|    }
+   39|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/IntroController.swift:
+    1|       |//
+    2|       |//  IntroController.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian on 24/11/18.
+    6|       |//  Copyright © 2018 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |import UIKit
+   11|       |
+   12|       |
+   13|       |protocol IntroDisplayLogic: class {
+   14|       |    
+   15|       |    func displayData()
+   16|       |    func setupStatusBar(statusBarStyle: UIStatusBarStyle, backgroudColor: UIColor?)
+   17|       |    func showError(_ alertController: UIAlertController)
+   18|       |    func configureInvalidPassword()
+   19|       |    func presentDetailController()
+   20|       |    func configureLoginAnimationLoading()
+   21|       |    func configureLoginAnimationCompletion()
+   22|       |    func enableLogin(_ enabled: Bool)
+   23|       |}
+   24|       |
+   25|       |class IntroController: UIViewController, IntroDisplayLogic {
+   26|       |    
+   27|       |    @IBOutlet weak var userTf: UITextField!
+   28|       |    @IBOutlet weak var stackViewFields: UIStackView!
+   29|       |    @IBOutlet weak var passwordTf: UITextField!
+   30|       |    @IBOutlet weak var btnLogin: UIButton!
+   31|       |    @IBOutlet weak var containerFields: UIView!
+   32|       |    
+   33|       |    var interactor: IntroBusinessLogic?
+   34|       |    var router: (NSObjectProtocol & IntroRouterLogic)?
+   35|       |    
+   36|       |    var loadingView: LoadingView?
+   37|       |    
+   38|       |    // MARK: Object lifecycle
+   39|      0|    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+   40|      0|        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+   41|      0|        setup()
+   42|      0|    }
+   43|       |    
+   44|      5|    required init?(coder aDecoder: NSCoder) {
+   45|      5|        super.init(coder: aDecoder)
+   46|      5|        setup()
+   47|      5|    }
+   48|       |    
+   49|      5|    private func setup() {
+   50|      5|        let viewController = self
+   51|      5|        let interactor = IntroInteractor()
+   52|      5|        let presenter = IntroPresenter()
+   53|      5|        let router = IntroRouter()
+   54|      5|        
+   55|      5|        viewController.interactor = interactor
+   56|      5|        viewController.router = router
+   57|      5|        interactor.presenter = presenter
+   58|      5|        presenter.viewController = viewController
+   59|      5|        router.viewController = viewController
+   60|      5|        router.dataStore = interactor
+   61|      5|    }
+   62|       |    
+   63|      0|    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+   64|      0|        guard let scene = segue.identifier else { return }
+   65|      0|        
+   66|      0|        let selector = NSSelectorFromString("routeTo\(scene)WithSegue:")
+   67|      0|        guard let router = router, router.responds(to: selector) else { return }
+   68|      0|        router.perform(selector)
+   69|      0|    }
+   70|       |    
+   71|       |    // MARK: View Lifecycle
+   72|       |    
+   73|      5|    override func viewDidLoad() {
+   74|      5|        super.viewDidLoad()
+   75|      5|        
+   76|      5|        passwordTf.delegate = self
+   77|      5|        userTf.delegate = self
+   78|      5|        
+   79|      5|        tryAutoLogin()
+   80|      5|        setupUIElements()
+   81|      5|    }
+   82|       |    
+   83|      5|    override func viewWillAppear(_ animated: Bool) {
+   84|      5|        super.viewWillAppear(animated)
+   85|      5|        interactor?.resetStatusBar()
+   86|      5|    }
+   87|       |    
+   88|       |    /// Recive some object to display in view controller.
+   89|      0|    func displayData() {
+   90|      0|        // ...
+   91|      0|    }
+   92|       |    
+   93|      3|    func setupStatusBar(statusBarStyle: UIStatusBarStyle, backgroudColor: UIColor?) {
+   94|      3|        self.setStatusBarStyle(statusBarStyle, backgroundColor: backgroudColor)
+   95|      3|    }
+   96|       |    
+   97|      6|    func tryAutoLogin() {
+   98|      6|        interactor?.tryAutoLogin()
+   99|      6|    }
+  100|       |    
+  101|      0|    func showError(_ alertController: UIAlertController) {
+  102|      0|        self.present(alertController, animated: true, completion: nil)
+  103|      0|    }
+  104|       |    
+  105|      0|    func configureInvalidPassword() {
+  106|      0|        passwordTf.shakeError()
+  107|      0|        passwordTf.placeholder = NSLocalizedString("SENHA_INVALIDA", comment: "")
+  108|      0|        
+  109|      0|        clearTf()
+  110|      0|    }
+  111|       |    
+  112|      0|    func configureLoginAnimationLoading() {
+  113|      0|        loadingView = LoadingView()
+  114|      0|        loadingView?.show(in: self.view)
+  115|      0|        
+  116|      0|        hiddenLoginElements(true)
+  117|      0|    }
+  118|       |    
+  119|      0|    func configureLoginAnimationCompletion() {
+  120|      0|        loadingView?.dismiss()
+  121|      0|        
+  122|      0|        clearTf()
+  123|      0|        hiddenLoginElements(false)
+  124|      0|    }
+  125|       |    
+  126|      0|    private func hiddenLoginElements(_ hidden: Bool) {
+  127|      0|        let _hidden: CGFloat = hidden ? 0 : 1
+  128|      0|        stackViewFields.alpha = _hidden
+  129|      0|        enableLogin(!hidden)
+  130|      0|    }
+  131|       |    
+  132|      0|    private func clearTf() {
+  133|      0|        userTf.text = ""
+  134|      0|        passwordTf.text = ""
+  135|      0|    }
+  136|       |    
+  137|      5|    func enableLogin(_ enabled: Bool) {
+  138|      5|        btnLogin.isEnabled = enabled
+  139|      5|        btnLogin.alpha = enabled ? 1 : 0.6
+  140|      5|    }
+  141|       |    
+  142|      1|    func doLogin() {
+  143|      1|        let userLogin = UserLogin(user: userTf.text, password: passwordTf.text)
+  144|      1|        interactor?.loginUser(user: userLogin)
+  145|      1|    }
+  146|       |    
+  147|      0|    func presentDetailController() {
+  148|      0|        router?.routeToBankHistory(segue: nil)
+  149|      0|    }
+  150|       |    
+  151|       |    // MARK: Actions
+  152|      0|    @IBAction func actionLogin(_ sender: Any) {
+  153|      0|        doLogin()
+  154|      0|    }
+  155|       |    
+  156|      0|    @IBAction func unwindToIntroController(segue: UIStoryboardSegue) {
+  157|      0|    }
+  158|       |}
+  159|       |
+  160|       |extension IntroController: UITextFieldDelegate {
+  161|       |    
+  162|      0|    func textFieldDidEndEditing(_ textField: UITextField) {
+  163|      0|        interactor?.verifyFields([userTf, passwordTf])
+  164|      0|    }
+  165|       |    
+  166|      0|    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+  167|      0|        interactor?.verifyFields([userTf, passwordTf])
+  168|      0|        return true
+  169|      0|    }
+  170|       |}
+  171|       |
+  172|       |extension IntroController {
+  173|       |    
+  174|       |    /// Initialize all ui elements.
+  175|      5|    private func setupUIElements() {
+  176|      5|        self.userTf.placeholder = NSLocalizedString("EMAIL_PLACEHOLDER", comment: "email placeholder")
+  177|      5|        self.passwordTf.placeholder = NSLocalizedString("PASSWORD_PLACEHOLDER", comment: "password placeholder")
+  178|      5|        self.enableLogin(false)
+  179|      5|    }
+  180|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/IntroInteractor.swift:
+    1|       |//
+    2|       |//  IntroInteractor.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian on 24/11/18.
+    6|       |//  Copyright © 2018 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |import UIKit
+   11|       |import WatchConnectivity
+   12|       |
+   13|       |/*
+   14|       | - Trata das ações de interação fora do app, servidor, cor data entre outros.
+   15|       | */
+   16|       |protocol IntroBusinessLogic {
+   17|       |    func loginUser(user: UserLogin)
+   18|       |    func tryAutoLogin()
+   19|       |    func resetStatusBar()
+   20|       |    func verifyFields(_ fields: [UITextField])
+   21|       |}
+   22|       |
+   23|       |class IntroInteractor: IntroBusinessLogic, UserAccountData {
+   24|       |
+   25|       |    var userAccount: UserAccountable?
+   26|       |    var presenter: IntroPresentationLogic?
+   27|       |    
+   28|      2|    func loginUser(user: UserLogin) {
+   29|      2|        self.presenter?.showLoading()
+   30|      2|        
+   31|      2|        if validUserPassword(user) {
+   32|      1|            self.tryLogin(user: user)
+   33|      2|        }
+   34|      2|        else {
+   35|      1|            self.presenter?.catchPasswordInvalid()
+   36|      2|        }
+   37|      2|    }
+   38|       |    
+   39|       |    /// Try Auto login
+   40|      4|    func tryAutoLogin() {
+   41|      4|        let user = KeychainWorker().getUserLogin()
+   42|      4|        
+   43|      4|        if user.user != nil {
+   44|      0|            loginUser(user: user)
+   45|      4|        }
+   46|      4|        else {
+   47|      4|            let error = BankErrorType.userNotFound.error
+   48|      4|            presenter?.abortAutoLogin(error: error)
+   49|      4|        }
+   50|      4|    }
+   51|       |    
+   52|      1|    private func tryLogin(user: UserLogin) {
+   53|      1|        BankWorker().userLogin(user) { (userResponse) in
+   54|      0|            if let bankError = userResponse?.error, bankError.code != nil {
+   55|      0|                
+   56|      0|                KeychainWorker().deleteUser()
+   57|      0|                self.presenter?.showError(error: bankError)
+   58|      0|            }
+   59|      0|            else if let userAccount = userResponse?.userAccount {
+   60|      0|                self.userAccount = userAccount
+   61|      0|                
+   62|      0|                KeychainWorker().saveUserLogin(login: user)
+   63|      0|                self.sendUserAccountToAppleWatch(userAccount)
+   64|      0|                self.presenter?.showHistoryController()
+   65|      0|            }
+   66|      0|        }
+   67|      1|    }
+   68|       |    
+   69|      4|    func resetStatusBar() {
+   70|      4|        presenter?.setDefaultStatusBar()
+   71|      4|    }
+   72|       |    
+   73|      1|    func verifyFields(_ fields: [UITextField]) {
+   74|      1|        var enabled: [Bool] = []
+   75|      1|        for field in fields {
+   76|      1|            if let text = field.text, text != "" {
+   77|      0|                enabled.append(true)
+   78|      1|            }
+   79|      1|            else {
+   80|      1|                enabled.append(false)
+   81|      1|            }
+   82|      1|            presenter?.enableLoginButton(!enabled.contains(false))
+   83|      1|        }
+   84|      1|    }
+   85|       |}
+   86|       |
+   87|       |extension IntroInteractor {
+   88|       |    
+   89|       |    /// Asks for user validation.
+   90|      2|    fileprivate func validUserPassword(_ user: UserLogin) -> Bool {
+   91|      2|        guard let password = user.password else { return false }
+   92|      2|        return password.isValidPassword()
+   93|      2|    }
+   94|       |    
+   95|      0|    fileprivate func sendDataFromAppleWatch(dict: [String: Any]) {
+   96|      0|        do {
+   97|      0|            try WCSession.default.updateApplicationContext(dict)
+   98|      0|        } catch {
+   99|      0|            print(error.localizedDescription)
+  100|      0|        }
+  101|      0|    }
+  102|       |    
+  103|      0|    fileprivate func sendUserAccountToAppleWatch(_ userAccount: UserAccountable) {
+  104|      0|        guard let _ = userAccount.name else { return }
+  105|      0|        sendDataFromAppleWatch(dict: ["name": userAccount.name!])
+  106|      0|        sendDataFromAppleWatch(dict: ["agency": userAccount.agency!])
+  107|      0|        sendDataFromAppleWatch(dict: ["bankAccount": userAccount.bankAccount!])
+  108|      0|        sendDataFromAppleWatch(dict: ["balance": userAccount.balance!])
+  109|      0|    }
+  110|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/IntroPresenter.swift:
+    1|       |//
+    2|       |//  IntroPresenter.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian on 24/11/18.
+    6|       |//  Copyright © 2018 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |import UIKit
+   11|       |
+   12|       |protocol IntroPresentationLogic {
+   13|       |    func showHistoryController()
+   14|       |    func showError(error: BankError)
+   15|       |    func showLoading()
+   16|       |    func catchPasswordInvalid()
+   17|       |    func abortAutoLogin(error: BankError)
+   18|       |    func setDefaultStatusBar()
+   19|       |    func enableLoginButton(_ enable: Bool)
+   20|       |}
+   21|       |
+   22|       |class IntroPresenter: IntroPresentationLogic {
+   23|       |    
+   24|       |    weak var viewController: IntroDisplayLogic?
+   25|       |    
+   26|      1|    func showHistoryController() {
+   27|      1|        viewController?.presentDetailController()
+   28|      1|        viewController?.configureLoginAnimationCompletion()
+   29|      1|    }
+   30|       |    
+   31|      1|    func showError(error: BankError) {
+   32|      1|        if let errorMessage = error.message {
+   33|      1|            buildAlert(title: "Erro", menssage: errorMessage)
+   34|      1|        }
+   35|      1|        viewController?.configureLoginAnimationCompletion()
+   36|      1|    }
+   37|       |    
+   38|      1|    func showLoading() {
+   39|      1|        viewController?.configureLoginAnimationLoading()
+   40|      1|    }
+   41|       |    
+   42|      1|    func catchPasswordInvalid() {
+   43|      1|        
+   44|      1|        buildAlert(title: NSLocalizedString("SENHA_INVALIDA", comment: ""), menssage: NSLocalizedString("SENHA_INVALIDA_ERROR_MESSAGE", comment: ""))
+   45|      1|        viewController?.configureLoginAnimationCompletion()
+   46|      1|        viewController?.configureInvalidPassword()
+   47|      1|    }
+   48|       |    
+   49|      3|    func abortAutoLogin(error: BankError) {
+   50|      3|        #if DEBUG
+   51|      3|            print(error.message)
+   52|      3|        #endif
+   53|      3|    }
+   54|       |    
+   55|      4|    func setDefaultStatusBar() {
+   56|      4|        viewController?.setupStatusBar(statusBarStyle: .default, backgroudColor: .clear)
+   57|      4|    }
+   58|       |    
+   59|      1|    func enableLoginButton(_ enable: Bool) {
+   60|      1|        viewController?.enableLogin(enable)
+   61|      1|    }
+   62|       |    
+   63|      2|    private func buildAlert(title: String, menssage: String) {
+   64|      2|        let alertBox = UIAlertController(title: title, message: menssage, preferredStyle: .alert)
+   65|      2|        let action = UIAlertAction(title: "OK", style: .default) { (action) in
+   66|      0|            alertBox.dismiss(animated: true, completion: nil)
+   67|      0|        }
+   68|      2|        alertBox.addAction(action)
+   69|      2|        
+   70|      2|        viewController?.showError(alertBox)
+   71|      2|    }
+   72|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/IntroRouter.swift:
+    1|       |//
+    2|       |//  IntroRouter.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 24/12/2018.
+    6|       |//  Copyright © 2018 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import UIKit
+   10|       |
+   11|       |@objc protocol IntroRouterLogic {
+   12|       |    
+   13|       |    func routeToBankHistory(segue: UIStoryboardSegue?)
+   14|       |}
+   15|       |
+   16|       |class IntroRouter: NSObject, IntroRouterLogic {
+   17|       |    
+   18|       |    var dataStore: UserAccountData?
+   19|       |    var viewController: IntroController?
+   20|       |    
+   21|      0|    func routeToBankHistory(segue: UIStoryboardSegue?) {
+   22|      0|        if let segue = segue {
+   23|      0|            if segue.destination is BankHistoryController {
+   24|      0|                // ...
+   25|      0|            }
+   26|      0|        }
+   27|      0|        else {
+   28|      0|            let storyboard = UIStoryboard(name: "BankHistory", bundle: Bundle(for: self.classForCoder))
+   29|      0|            if let navigationController = storyboard.instantiateInitialViewController() as? UINavigationController {
+   30|      0|                if let bankHistoryController = navigationController.viewControllers.first as? BankHistoryController {
+   31|      0|                    var destinationDS = bankHistoryController.router!.dataStore!
+   32|      0|                    passDataToBankHistory(source: dataStore!, destination: &destinationDS)
+   33|      0|                    navigateBankHistory(source: viewController!, destination: navigationController)
+   34|      0|                }
+   35|      0|            }
+   36|      0|        }
+   37|      0|    }
+   38|       |    
+   39|      0|    private func passDataToBankHistory(source: UserAccountData, destination: inout UserAccountData) {
+   40|      0|        destination.userAccount = source.userAccount
+   41|      0|    }
+   42|       |    
+   43|      0|    private func navigateBankHistory(source: IntroController, destination: UINavigationController) {
+   44|      0|        source.show(destination, sender: nil)
+   45|      0|    }
+   46|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/KeychainWorker.swift:
+    1|       |//
+    2|       |//  KeychainWorker.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 01/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |import KeychainSwift
+   11|       |
+   12|       |class KeychainWorker: KeychainWorkerProtocol {
+   13|       |    
+   14|       |    var keychainAcess: KeychainSwift
+   15|       |    
+   16|      4|    init () {
+   17|      4|        self.keychainAcess = KeychainSwift()
+   18|      4|    }
+   19|       |    
+   20|      4|    func getUserLogin() -> UserLogin {
+   21|      4|        let user = keychainAcess.get(UserLogin().userKeychainKey())
+   22|      4|        let password = keychainAcess.get(UserLogin().passwordKeychainKey())
+   23|      4|        
+   24|      4|        return UserLogin.init(user: user, password: password)
+   25|      4|    }
+   26|       |    
+   27|      0|    func saveUserLogin(login: UserLogin) {
+   28|      0|        guard let user = login.user else { return }
+   29|      0|        guard let password = login.password else { return }
+   30|      0|        
+   31|      0|        keychainAcess.set(user, forKey: login.userKeychainKey())
+   32|      0|        keychainAcess.set(password, forKey: login.passwordKeychainKey())
+   33|      0|    }
+   34|       |    
+   35|      0|    func deleteUser() {
+   36|      0|        keychainAcess.delete(UserLogin().userKeychainKey())
+   37|      0|        keychainAcess.delete(UserLogin().passwordKeychainKey())
+   38|      0|    }
+   39|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/LoadingView.swift:
+    1|       |//
+    2|       |//  LoadingView.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian Salgado on 20/02/19.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import UIKit
+   10|       |
+   11|       |class LoadingView {
+   12|       |    var spinningView: UIActivityIndicatorView?
+   13|       |    
+   14|      0|    init() {
+   15|      0|        self.spinningView = UIActivityIndicatorView(style: .gray)
+   16|      0|    }
+   17|       |    
+   18|      0|    func show(in view: UIView) {
+   19|      0|        if let _ = spinningView {
+   20|      0|            spinningView?.center = view.center
+   21|      0|            spinningView?.startAnimating()
+   22|      0|            view.addSubview(spinningView!)
+   23|      0|        }
+   24|      0|    }
+   25|       |    
+   26|      0|    func dismiss() {
+   27|      0|        spinningView?.stopAnimating()
+   28|      0|        spinningView = nil
+   29|      0|    }
+   30|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/Localizable + IBInspectable.swift:
+    1|       |//
+    2|       |//  Localizable + IBInspectable.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 01/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |import UIKit
+   11|       |
+   12|       |protocol Localizable {
+   13|       |    var localized: String { get }
+   14|       |}
+   15|       |extension String: Localizable {
+   16|      5|    var localized: String {
+   17|      5|        return NSLocalizedString(self, comment: "")
+   18|      5|    }
+   19|       |}
+   20|       |
+   21|       |protocol XIBLocalizable {
+   22|       |    var xibLocKey: String? { get set }
+   23|       |}
+   24|       |
+   25|       |extension UILabel: XIBLocalizable {
+   26|       |    @IBInspectable var xibLocKey: String? {
+   27|      0|        get { return nil }
+   28|      0|        set(key) {
+   29|      0|            text = key?.localized
+   30|      0|        }
+   31|       |    }
+   32|       |}
+   33|       |
+   34|       |extension UIButton: XIBLocalizable {
+   35|       |    @IBInspectable var xibLocKey: String? {
+   36|      0|        get { return nil }
+   37|      5|        set(key) {
+   38|      5|            setTitle(key?.localized, for: .normal)
+   39|      5|        }
+   40|       |    }
+   41|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/Statement.swift:
+    1|       |//
+    2|       |//  Statement.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 02/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |
+   11|       |struct Statement {
+   12|       |    
+   13|       |    let title: String
+   14|       |    let description: String
+   15|       |    let date: Date
+   16|       |    let value: String
+   17|       |    
+   18|       |    enum CodingKeys: String, CodingKey {
+   19|       |        case title
+   20|       |        case description = "desc"
+   21|       |        case date
+   22|       |        case value
+   23|       |    }
+   24|       |}
+   25|       |
+   26|       |extension Statement: Decodable {
+   27|      4|    init(from decoder: Decoder) throws {
+   28|      4|        let values = try decoder.container(keyedBy: CodingKeys.self)
+   29|      4|        title = try values.decode(String.self, forKey: .title)
+   30|      4|        description = try values.decode(String.self, forKey: .description)
+   31|      4|        date = try values.decode(String.self, forKey: .date).toDate()!
+   32|      4|        value = try values.decode(Double.self, forKey: .value).toStringCurrency()
+   33|      4|    }
+   34|       |}
+   35|       |
+   36|       |extension String {
+   37|      5|    func toDate() -> Date? {
+   38|      5|        let dateFormatter = DateFormatter()
+   39|      5|        dateFormatter.dateFormat = "yyyy-MM-dd"
+   40|      5|        
+   41|      5|        let date = dateFormatter.date(from: self)
+   42|      5|        return date
+   43|      5|
+   44|      5|    }
+   45|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/StatementResponse.swift:
+    1|       |//
+    2|       |//  StatementResponse.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 02/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |
+   11|       |struct StatementResponse: Decodable {
+   12|       |    let statementList: [Statement]?
+   13|       |    let error: BankError?
+   14|       |    
+   15|       |    enum CodingKeys: String, CodingKey {
+   16|       |        case statementList
+   17|       |        case error
+   18|       |    }
+   19|       |}
+   20|       |
+   21|       |extension StatementResponse {
+   22|      3|    init(from decoder: Decoder) throws {
+   23|      3|        let values = try decoder.container(keyedBy: CodingKeys.self)
+   24|      3|        statementList = try values.decodeIfPresent([Statement].self, forKey: .statementList)
+   25|      3|        error = try values.decodeIfPresent(BankError.self, forKey: .error)
+   26|      3|    }
+   27|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/String+AgencyFormatter.swift:
+    1|       |//
+    2|       |//  String+AgencyFormatter.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian on 17/01/19.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |import UIKit
+   11|       |
+   12|       |extension String {
+   13|       |    
+   14|      4|    func toBankAgency() -> String {
+   15|      4|        var string = self
+   16|      4|        if self.contains("-") {} else { string.insert("-", at: string.index(before: string.endIndex)) }
+   17|      4|        if self.contains(".") {} else { string.insert(".", at: string.index(after: string.index(after: string.startIndex))) }
+   18|      4|        return string
+   19|      4|    }
+   20|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/String+HexColor.swift:
+    1|       |//
+    2|       |//  String+HexColor.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 03/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import UIKit
+   10|       |
+   11|       |extension String {
+   12|       |    
+   13|      2|    func hexColor()-> UIColor {
+   14|      2|        var cString:String = self.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+   15|      2|        
+   16|      2|        if (cString.hasPrefix("#")) {
+   17|      1|            cString.remove(at: cString.startIndex)
+   18|      2|        }
+   19|      2|        
+   20|      2|        if ((cString.count) != 6) {
+   21|      0|            return UIColor.gray
+   22|      2|        }
+   23|      2|        
+   24|      2|        var rgbValue:UInt32 = 0
+   25|      2|        Scanner(string: cString).scanHexInt32(&rgbValue)
+   26|      2|        
+   27|      2|        return UIColor(
+   28|      2|            red: CGFloat((rgbValue & 0xFF0000) >> 16) / 255.0,
+   29|      2|            green: CGFloat((rgbValue & 0x00FF00) >> 8) / 255.0,
+   30|      2|            blue: CGFloat(rgbValue & 0x0000FF) / 255.0,
+   31|      2|            alpha: CGFloat(1.0)
+   32|      2|        )
+   33|      2|    }
+   34|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/String+PasswordValidation.swift:
+    1|       |//
+    2|       |//  String+PasswordValidation.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian on 15/01/19.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |
+   11|       |extension String {
+   12|       |    
+   13|      6|    func isValidPassword() -> Bool {
+   14|      6|        let regularExpression = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[$@$!%*?&])[A-Za-z\\d$@$!%*?&]{8,}"
+   15|      6|        let passwordValidation = NSPredicate.init(format: "SELF MATCHES %@", regularExpression)
+   16|      6|        
+   17|      6|        return passwordValidation.evaluate(with: self)
+   18|      6|    }
+   19|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/UIView+ShakeAnimation.swift:
+    1|       |//
+    2|       |//  UIView+ShakeAnimation.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian on 15/01/19.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |import UIKit
+   11|       |
+   12|       |extension UIView {
+   13|       |    
+   14|      0|    func shake() {
+   15|      0|        let animation = CABasicAnimation(keyPath: "position")
+   16|      0|        animation.duration = 0.07
+   17|      0|        animation.repeatCount = 4
+   18|      0|        animation.autoreverses = true
+   19|      0|        animation.fromValue = NSValue(cgPoint: CGPoint(x: self.center.x - 10, y: self.center.y))
+   20|      0|        animation.toValue = NSValue(cgPoint: CGPoint(x: self.center.x + 10, y: self.center.y))
+   21|      0|        
+   22|      0|        self.layer.add(animation, forKey: "position")
+   23|      0|    }
+   24|       |}
+   25|       |
+   26|       |extension UITextField {
+   27|       |    
+   28|      0|    func shakeError() {
+   29|      0|        let animation = CABasicAnimation(keyPath: "position")
+   30|      0|        animation.duration = 0.07
+   31|      0|        animation.repeatCount = 3
+   32|      0|        animation.autoreverses = true
+   33|      0|        animation.fromValue = NSValue(cgPoint: CGPoint(x: self.center.x - 10, y: self.center.y))
+   34|      0|        animation.toValue = NSValue(cgPoint: CGPoint(x: self.center.x + 10, y: self.center.y))
+   35|      0|        
+   36|      0|        self.layer.add(animation, forKey: "position")
+   37|      0|        self.attributedPlaceholder = NSAttributedString(string: self.placeholder ?? "", attributes: [NSAttributedString.Key.foregroundColor: UIColor.red])
+   38|      0|    }
+   39|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/UIViewController+StatusBarColor.swift:
+    1|       |//
+    2|       |//  UIViewController+StatusBarColor.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 03/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import UIKit
+   10|       |
+   11|       |extension UIViewController {
+   12|       |    
+   13|      3|    func setStatusBarStyle(_ style: UIStatusBarStyle, backgroundColor: UIColor? = nil) {
+   14|      3|//        if let backgroundColor = backgroundColor {
+   15|      3|//            if let statusBar = UIApplication.shared.value(forKey: "statusBar") as? UIView {
+   16|      3|//                statusBar.backgroundColor = backgroundColor
+   17|      3|//                statusBar.setValue(style == .lightContent ? UIColor.white : .black, forKey: "foregroundColor")
+   18|      3|//            }
+   19|      3|//        }
+   20|      3|//        else {
+   21|      3|//            // ...
+   22|      3|//        }
+   23|      3|    }
+   24|       |    
+   25|      0|    func setStatusBarStyle(_ style: UIStatusBarStyle, backgroundColor: UIColor? = nil, withAlpha: CGFloat) {
+   26|      0|//        if let backgroundColor = backgroundColor {
+   27|      0|//            if let statusBar = UIApplication.shared.value(forKey: "statusBar") as? UIView {
+   28|      0|//                statusBar.backgroundColor = backgroundColor.withAlphaComponent(withAlpha)
+   29|      0|//                statusBar.setValue(style == .lightContent ? UIColor.white : .black, forKey: "foregroundColor")
+   30|      0|//            }
+   31|      0|//        }
+   32|      0|//        else {
+   33|      0|//            //...
+   34|      0|//        }
+   35|      0|    }
+   36|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/UserAccount.swift:
+    1|       |//
+    2|       |//  UserHistory.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 29/12/2018.
+    6|       |//  Copyright © 2018 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |
+   11|       |struct UserAccount: UserAccountable, Decodable {
+   12|       |    var userId: Int?
+   13|       |    var name: String?
+   14|       |    var bankAccount: String?
+   15|       |    var agency: String?
+   16|       |    var balance: Double?
+   17|       |    
+   18|       |    enum CodingKeys: String, CodingKey {
+   19|       |        case userId = "userId"
+   20|       |        case name = "name"
+   21|       |        case bankAccount = "bankAccount"
+   22|       |        case agency = "agency"
+   23|       |        case balance = "balance"
+   24|       |    }
+   25|       |}
+   26|       |
+   27|       |extension UserAccount {
+   28|      3|    init(from decoder: Decoder) throws {
+   29|      3|        let values = try decoder.container(keyedBy: CodingKeys.self)
+   30|      3|        userId = try values.decodeIfPresent(Int.self, forKey: .userId)
+   31|      3|        name = try values.decodeIfPresent(String.self, forKey: .name)
+   32|      3|        bankAccount = try values.decodeIfPresent(String.self, forKey: .bankAccount)
+   33|      3|        agency = try values.decodeIfPresent(String.self, forKey: .agency)?.toBankAgency()
+   34|      3|        balance = try values.decodeIfPresent(Double.self, forKey: .balance)
+   35|      3|    }
+   36|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/UserLogin.swift:
+    1|       |//
+    2|       |//  User.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian on 24/11/18.
+    6|       |//  Copyright © 2018 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |
+   11|       |struct UserLogin: Encodable {
+   12|       |    var user: String?
+   13|       |    var password: String?
+   14|       |    
+   15|       |    enum CodingKeys: String, CodingKey {
+   16|       |        case user
+   17|       |        case password
+   18|       |    }
+   19|       |    
+   20|       |    private enum KeychainKey: String {
+   21|       |        case user = "keychain_user_login"
+   22|       |        case password = "keychain_user_password"
+   23|       |    }
+   24|       |    
+   25|      4|    func userKeychainKey() -> String {
+   26|      4|        return KeychainKey.user.rawValue
+   27|      4|    }
+   28|       |    
+   29|      4|    func passwordKeychainKey() -> String {
+   30|      4|        return KeychainKey.user.rawValue
+   31|      4|    }
+   32|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank App/Source/UserResponse.swift:
+    1|       |//
+    2|       |//  UserResponse.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 30/12/2018.
+    6|       |//  Copyright © 2018 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |
+   11|       |struct UserResponse {
+   12|       |    let userAccount: UserAccount?
+   13|       |    let error: BankError?
+   14|       |    
+   15|       |    enum CodingKeys: String, CodingKey {
+   16|       |        case userAccount
+   17|       |        case error
+   18|       |    }
+   19|       |}
+   20|       |
+   21|       |extension UserResponse: Decodable {
+   22|      3|    init(from decoder: Decoder) throws {
+   23|      3|        let values = try decoder.container(keyedBy: CodingKeys.self)
+   24|      3|        userAccount = try values.decodeIfPresent(UserAccount.self, forKey: .userAccount)
+   25|      3|        error = try values.decodeIfPresent(BankError.self, forKey: .error)
+   26|      3|    }
+   27|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank Watch App Extension/UserPreferencesWorker.swift:
+    1|       |//
+    2|       |// UserPreferencesWorker.swift
+    3|       |//  Bank Watch App Extension
+    4|       |//
+    5|       |//  Created by Chrystian Salgado on 08/03/19.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import Foundation
+   10|       |
+   11|       |class UserPreferencesWorker {
+   12|       |    
+   13|      0|    func savePreference(value: Any, usingKey: String) {
+   14|      0|        UserDefaults.standard.set(value, forKey: usingKey)
+   15|      0|    }
+   16|       |    
+   17|      0|    func getPreference(from key: String) -> Any? {
+   18|      0|        return UserDefaults.standard.object(forKey: key)
+   19|      0|    }
+   20|       |    
+   21|      0|    func deletePreference(from key: String) {
+   22|      0|        UserDefaults.standard.removeObject(forKey: key)
+   23|      0|    }
+   24|       |}
+

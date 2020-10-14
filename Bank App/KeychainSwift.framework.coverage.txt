@@ -1,0 +1,429 @@
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Pods/KeychainSwift/Sources/KeychainSwift.swift:
+    1|       |import Security
+    2|       |import Foundation
+    3|       |
+    4|       |/**
+    5|       |
+    6|       |A collection of helper functions for saving text and data in the keychain.
+    7|       |
+    8|       |*/
+    9|       |open class KeychainSwift {
+   10|       |  
+   11|       |  var lastQueryParameters: [String: Any]? // Used by the unit tests
+   12|       |  
+   13|       |  /// Contains result code from the last operation. Value is noErr (0) for a successful result.
+   14|      4|  open var lastResultCode: OSStatus = noErr
+   15|       |
+   16|       |  var keyPrefix = "" // Can be useful in test.
+   17|       |  
+   18|       |  /**
+   19|       |
+   20|       |  Specify an access group that will be used to access keychain items. Access groups can be used to share keychain items between applications. When access group value is nil all application access groups are being accessed. Access group name is used by all functions: set, get, delete and clear.
+   21|       |
+   22|       |  */
+   23|       |  open var accessGroup: String?
+   24|       |  
+   25|       |  
+   26|       |  /**
+   27|       |   
+   28|       |  Specifies whether the items can be synchronized with other devices through iCloud. Setting this property to true will
+   29|       |   add the item to other devices with the `set` method and obtain synchronizable items with the `get` command. Deleting synchronizable items will remove them from all devices. In order for keychain synchronization to work the user must enable "Keychain" in iCloud settings.
+   30|       |   
+   31|       |  Does not work on macOS.
+   32|       |   
+   33|       |  */
+   34|       |  open var synchronizable: Bool = false
+   35|       |
+   36|      4|  private let readLock = NSLock()
+   37|       |  
+   38|       |  /// Instantiate a KeychainSwift object
+   39|      4|  public init() { }
+   40|       |  
+   41|       |  /**
+   42|       |  
+   43|       |  - parameter keyPrefix: a prefix that is added before the key in get/set methods. Note that `clear` method still clears everything from the Keychain.
+   44|       |
+   45|       |  */
+   46|      0|  public init(keyPrefix: String) {
+   47|      0|    self.keyPrefix = keyPrefix
+   48|      0|  }
+   49|       |  
+   50|       |  /**
+   51|       |  
+   52|       |  Stores the text value in the keychain item under the given key.
+   53|       |  
+   54|       |  - parameter key: Key under which the text value is stored in the keychain.
+   55|       |  - parameter value: Text string to be written to the keychain.
+   56|       |  - parameter withAccess: Value that indicates when your app needs access to the text in the keychain item. By default the .AccessibleWhenUnlocked option is used that permits the data to be accessed only while the device is unlocked by the user.
+   57|       |   
+   58|       |   - returns: True if the text was successfully written to the keychain.
+   59|       |
+   60|       |  */
+   61|       |  @discardableResult
+   62|       |  open func set(_ value: String, forKey key: String,
+   63|      0|                  withAccess access: KeychainSwiftAccessOptions? = nil) -> Bool {
+   64|      0|    
+   65|      0|    if let value = value.data(using: String.Encoding.utf8) {
+   66|      0|      return set(value, forKey: key, withAccess: access)
+   67|      0|    }
+   68|      0|    
+   69|      0|    return false
+   70|      0|  }
+   71|       |
+   72|       |  /**
+   73|       |  
+   74|       |  Stores the data in the keychain item under the given key.
+   75|       |  
+   76|       |  - parameter key: Key under which the data is stored in the keychain.
+   77|       |  - parameter value: Data to be written to the keychain.
+   78|       |  - parameter withAccess: Value that indicates when your app needs access to the text in the keychain item. By default the .AccessibleWhenUnlocked option is used that permits the data to be accessed only while the device is unlocked by the user.
+   79|       |  
+   80|       |  - returns: True if the text was successfully written to the keychain.
+   81|       |  
+   82|       |  */
+   83|       |  @discardableResult
+   84|       |  open func set(_ value: Data, forKey key: String,
+   85|      0|    withAccess access: KeychainSwiftAccessOptions? = nil) -> Bool {
+   86|      0|    
+   87|      0|    delete(key) // Delete any existing key before saving it
+   88|      0|
+   89|      0|    let accessible = access?.value ?? KeychainSwiftAccessOptions.defaultOption.value
+   90|      0|      
+   91|      0|    let prefixedKey = keyWithPrefix(key)
+   92|      0|      
+   93|      0|    var query: [String : Any] = [
+   94|      0|      KeychainSwiftConstants.klass       : kSecClassGenericPassword,
+   95|      0|      KeychainSwiftConstants.attrAccount : prefixedKey,
+   96|      0|      KeychainSwiftConstants.valueData   : value,
+   97|      0|      KeychainSwiftConstants.accessible  : accessible
+   98|      0|    ]
+   99|      0|      
+  100|      0|    query = addAccessGroupWhenPresent(query)
+  101|      0|    query = addSynchronizableIfRequired(query, addingItems: true)
+  102|      0|    lastQueryParameters = query
+  103|      0|    
+  104|      0|    lastResultCode = SecItemAdd(query as CFDictionary, nil)
+  105|      0|    
+  106|      0|    return lastResultCode == noErr
+  107|      0|  }
+  108|       |
+  109|       |  /**
+  110|       |
+  111|       |  Stores the boolean value in the keychain item under the given key.
+  112|       |
+  113|       |  - parameter key: Key under which the value is stored in the keychain.
+  114|       |  - parameter value: Boolean to be written to the keychain.
+  115|       |  - parameter withAccess: Value that indicates when your app needs access to the value in the keychain item. By default the .AccessibleWhenUnlocked option is used that permits the data to be accessed only while the device is unlocked by the user.
+  116|       |
+  117|       |  - returns: True if the value was successfully written to the keychain.
+  118|       |
+  119|       |  */
+  120|       |  @discardableResult
+  121|       |  open func set(_ value: Bool, forKey key: String,
+  122|      0|    withAccess access: KeychainSwiftAccessOptions? = nil) -> Bool {
+  123|      0|  
+  124|      0|    let bytes: [UInt8] = value ? [1] : [0]
+  125|      0|    let data = Data(bytes: bytes)
+  126|      0|
+  127|      0|    return set(data, forKey: key, withAccess: access)
+  128|      0|  }
+  129|       |
+  130|       |  /**
+  131|       |  
+  132|       |  Retrieves the text value from the keychain that corresponds to the given key.
+  133|       |  
+  134|       |  - parameter key: The key that is used to read the keychain item.
+  135|       |  - returns: The text value from the keychain. Returns nil if unable to read the item.
+  136|       |  
+  137|       |  */
+  138|      8|  open func get(_ key: String) -> String? {
+  139|      8|    if let data = getData(key) {
+  140|      0|      
+  141|      0|      if let currentString = String(data: data, encoding: .utf8) {
+  142|      0|        return currentString
+  143|      0|      }
+  144|      0|      
+  145|      0|      lastResultCode = -67853 // errSecInvalidEncoding
+  146|      8|    }
+  147|      8|
+  148|      8|    return nil
+  149|      8|  }
+  150|       |
+  151|       |  /**
+  152|       |  
+  153|       |  Retrieves the data from the keychain that corresponds to the given key.
+  154|       |  
+  155|       |  - parameter key: The key that is used to read the keychain item.
+  156|       |  - returns: The text value from the keychain. Returns nil if unable to read the item.
+  157|       |  
+  158|       |  */
+  159|      8|  open func getData(_ key: String) -> Data? {
+  160|      8|    // The lock prevents the code to be run simlultaneously
+  161|      8|    // from multiple threads which may result in crashing
+  162|      8|    readLock.lock()
+  163|      8|    defer { readLock.unlock() }
+  164|      8|    
+  165|      8|    let prefixedKey = keyWithPrefix(key)
+  166|      8|    
+  167|      8|    var query: [String: Any] = [
+  168|      8|      KeychainSwiftConstants.klass       : kSecClassGenericPassword,
+  169|      8|      KeychainSwiftConstants.attrAccount : prefixedKey,
+  170|      8|      KeychainSwiftConstants.returnData  : kCFBooleanTrue,
+  171|      8|      KeychainSwiftConstants.matchLimit  : kSecMatchLimitOne
+  172|      8|    ]
+  173|      8|    
+  174|      8|    query = addAccessGroupWhenPresent(query)
+  175|      8|    query = addSynchronizableIfRequired(query, addingItems: false)
+  176|      8|    lastQueryParameters = query
+  177|      8|    
+  178|      8|    var result: AnyObject?
+  179|      8|    
+  180|      8|    lastResultCode = withUnsafeMutablePointer(to: &result) {
+  181|      8|      SecItemCopyMatching(query as CFDictionary, UnsafeMutablePointer($0))
+  182|      8|    }
+  183|      8|    
+  184|      8|    if lastResultCode == noErr { return result as? Data }
+  185|      8|    
+  186|      8|    return nil
+  187|      8|  }
+  188|       |
+  189|       |  /**
+  190|       |
+  191|       |  Retrieves the boolean value from the keychain that corresponds to the given key.
+  192|       |
+  193|       |  - parameter key: The key that is used to read the keychain item.
+  194|       |  - returns: The boolean value from the keychain. Returns nil if unable to read the item.
+  195|       |
+  196|       |  */
+  197|      0|  open func getBool(_ key: String) -> Bool? {
+  198|      0|    guard let data = getData(key) else { return nil }
+  199|      0|    guard let firstBit = data.first else { return nil }
+  200|      0|    return firstBit == 1
+  201|      0|  }
+  202|       |
+  203|       |  /**
+  204|       |
+  205|       |  Deletes the single keychain item specified by the key.
+  206|       |  
+  207|       |  - parameter key: The key that is used to delete the keychain item.
+  208|       |  - returns: True if the item was successfully deleted.
+  209|       |  
+  210|       |  */
+  211|       |  @discardableResult
+  212|      0|  open func delete(_ key: String) -> Bool {
+  213|      0|    let prefixedKey = keyWithPrefix(key)
+  214|      0|
+  215|      0|    var query: [String: Any] = [
+  216|      0|      KeychainSwiftConstants.klass       : kSecClassGenericPassword,
+  217|      0|      KeychainSwiftConstants.attrAccount : prefixedKey
+  218|      0|    ]
+  219|      0|    
+  220|      0|    query = addAccessGroupWhenPresent(query)
+  221|      0|    query = addSynchronizableIfRequired(query, addingItems: false)
+  222|      0|    lastQueryParameters = query
+  223|      0|    
+  224|      0|    lastResultCode = SecItemDelete(query as CFDictionary)
+  225|      0|    
+  226|      0|    return lastResultCode == noErr
+  227|      0|  }
+  228|       |
+  229|       |  /**
+  230|       |  
+  231|       |  Deletes all Keychain items used by the app. Note that this method deletes all items regardless of the prefix settings used for initializing the class.
+  232|       |  
+  233|       |  - returns: True if the keychain items were successfully deleted.
+  234|       |  
+  235|       |  */
+  236|       |  @discardableResult
+  237|      0|  open func clear() -> Bool {
+  238|      0|    var query: [String: Any] = [ kSecClass as String : kSecClassGenericPassword ]
+  239|      0|    query = addAccessGroupWhenPresent(query)
+  240|      0|    query = addSynchronizableIfRequired(query, addingItems: false)
+  241|      0|    lastQueryParameters = query
+  242|      0|    
+  243|      0|    lastResultCode = SecItemDelete(query as CFDictionary)
+  244|      0|    
+  245|      0|    return lastResultCode == noErr
+  246|      0|  }
+  247|       |  
+  248|       |  /// Returns the key with currently set prefix.
+  249|      8|  func keyWithPrefix(_ key: String) -> String {
+  250|      8|    return "\(keyPrefix)\(key)"
+  251|      8|  }
+  252|       |  
+  253|      8|  func addAccessGroupWhenPresent(_ items: [String: Any]) -> [String: Any] {
+  254|      8|    guard let accessGroup = accessGroup else { return items }
+  255|      0|    
+  256|      0|    var result: [String: Any] = items
+  257|      0|    result[KeychainSwiftConstants.accessGroup] = accessGroup
+  258|      0|    return result
+  259|      8|  }
+  260|       |  
+  261|       |  /**
+  262|       | 
+  263|       |  Adds kSecAttrSynchronizable: kSecAttrSynchronizableAny` item to the dictionary when the `synchronizable` property is true.
+  264|       |   
+  265|       |   - parameter items: The dictionary where the kSecAttrSynchronizable items will be added when requested.
+  266|       |   - parameter addingItems: Use `true` when the dictionary will be used with `SecItemAdd` method (adding a keychain item). For getting and deleting items, use `false`.
+  267|       |   
+  268|       |   - returns: the dictionary with kSecAttrSynchronizable item added if it was requested. Otherwise, it returns the original dictionary.
+  269|       | 
+  270|       |  */
+  271|      8|  func addSynchronizableIfRequired(_ items: [String: Any], addingItems: Bool) -> [String: Any] {
+  272|      8|    if !synchronizable { return items }
+  273|      0|    var result: [String: Any] = items
+  274|      0|    result[KeychainSwiftConstants.attrSynchronizable] = addingItems == true ? true : kSecAttrSynchronizableAny
+  275|      0|    return result
+  276|      8|  }
+  277|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Pods/KeychainSwift/Sources/KeychainSwiftAccessOptions.swift:
+    1|       |import Security
+    2|       |
+    3|       |/**
+    4|       |
+    5|       |These options are used to determine when a keychain item should be readable. The default value is AccessibleWhenUnlocked.
+    6|       |
+    7|       |*/
+    8|       |public enum KeychainSwiftAccessOptions {
+    9|       |  
+   10|       |  /**
+   11|       |  
+   12|       |  The data in the keychain item can be accessed only while the device is unlocked by the user.
+   13|       |  
+   14|       |  This is recommended for items that need to be accessible only while the application is in the foreground. Items with this attribute migrate to a new device when using encrypted backups.
+   15|       |  
+   16|       |  This is the default value for keychain items added without explicitly setting an accessibility constant.
+   17|       |  
+   18|       |  */
+   19|       |  case accessibleWhenUnlocked
+   20|       |  
+   21|       |  /**
+   22|       |  
+   23|       |  The data in the keychain item can be accessed only while the device is unlocked by the user.
+   24|       |  
+   25|       |  This is recommended for items that need to be accessible only while the application is in the foreground. Items with this attribute do not migrate to a new device. Thus, after restoring from a backup of a different device, these items will not be present.
+   26|       |  
+   27|       |  */
+   28|       |  case accessibleWhenUnlockedThisDeviceOnly
+   29|       |  
+   30|       |  /**
+   31|       |  
+   32|       |  The data in the keychain item cannot be accessed after a restart until the device has been unlocked once by the user.
+   33|       |  
+   34|       |  After the first unlock, the data remains accessible until the next restart. This is recommended for items that need to be accessed by background applications. Items with this attribute migrate to a new device when using encrypted backups.
+   35|       |  
+   36|       |  */
+   37|       |  case accessibleAfterFirstUnlock
+   38|       |  
+   39|       |  /**
+   40|       |  
+   41|       |  The data in the keychain item cannot be accessed after a restart until the device has been unlocked once by the user.
+   42|       |  
+   43|       |  After the first unlock, the data remains accessible until the next restart. This is recommended for items that need to be accessed by background applications. Items with this attribute do not migrate to a new device. Thus, after restoring from a backup of a different device, these items will not be present.
+   44|       |  
+   45|       |  */
+   46|       |  case accessibleAfterFirstUnlockThisDeviceOnly
+   47|       |  
+   48|       |  /**
+   49|       |  
+   50|       |  The data in the keychain item can always be accessed regardless of whether the device is locked.
+   51|       |  
+   52|       |  This is not recommended for application use. Items with this attribute migrate to a new device when using encrypted backups.
+   53|       |  
+   54|       |  */
+   55|       |  case accessibleAlways
+   56|       |  
+   57|       |  /**
+   58|       |  
+   59|       |  The data in the keychain can only be accessed when the device is unlocked. Only available if a passcode is set on the device.
+   60|       |  
+   61|       |  This is recommended for items that only need to be accessible while the application is in the foreground. Items with this attribute never migrate to a new device. After a backup is restored to a new device, these items are missing. No items can be stored in this class on devices without a passcode. Disabling the device passcode causes all items in this class to be deleted.
+   62|       |  
+   63|       |  */
+   64|       |  case accessibleWhenPasscodeSetThisDeviceOnly
+   65|       |  
+   66|       |  /**
+   67|       |  
+   68|       |  The data in the keychain item can always be accessed regardless of whether the device is locked.
+   69|       |  
+   70|       |  This is not recommended for application use. Items with this attribute do not migrate to a new device. Thus, after restoring from a backup of a different device, these items will not be present.
+   71|       |  
+   72|       |  */
+   73|       |  case accessibleAlwaysThisDeviceOnly
+   74|       |  
+   75|      0|  static var defaultOption: KeychainSwiftAccessOptions {
+   76|      0|    return .accessibleWhenUnlocked
+   77|      0|  }
+   78|       |  
+   79|      0|  var value: String {
+   80|      0|    switch self {
+   81|      0|    case .accessibleWhenUnlocked:
+   82|      0|      return toString(kSecAttrAccessibleWhenUnlocked)
+   83|      0|      
+   84|      0|    case .accessibleWhenUnlockedThisDeviceOnly:
+   85|      0|      return toString(kSecAttrAccessibleWhenUnlockedThisDeviceOnly)
+   86|      0|      
+   87|      0|    case .accessibleAfterFirstUnlock:
+   88|      0|      return toString(kSecAttrAccessibleAfterFirstUnlock)
+   89|      0|      
+   90|      0|    case .accessibleAfterFirstUnlockThisDeviceOnly:
+   91|      0|      return toString(kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly)
+   92|      0|      
+   93|      0|    case .accessibleAlways:
+   94|      0|      return toString(kSecAttrAccessibleAlways)
+   95|      0|      
+   96|      0|    case .accessibleWhenPasscodeSetThisDeviceOnly:
+   97|      0|      return toString(kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly)
+   98|      0|      
+   99|      0|    case .accessibleAlwaysThisDeviceOnly:
+  100|      0|      return toString(kSecAttrAccessibleAlwaysThisDeviceOnly)
+  101|      0|    }
+  102|      0|  }
+  103|       |  
+  104|      0|  func toString(_ value: CFString) -> String {
+  105|      0|    return KeychainSwiftConstants.toString(value)
+  106|      0|  }
+  107|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Pods/KeychainSwift/Sources/TegKeychainConstants.swift:
+    1|       |import Foundation
+    2|       |import Security
+    3|       |
+    4|       |/// Constants used by the library
+    5|       |public struct KeychainSwiftConstants {
+    6|       |  /// Specifies a Keychain access group. Used for sharing Keychain items between apps.
+    7|      0|  public static var accessGroup: String { return toString(kSecAttrAccessGroup) }
+    8|       |  
+    9|       |  /**
+   10|       |   
+   11|       |   A value that indicates when your app needs access to the data in a keychain item. The default value is AccessibleWhenUnlocked. For a list of possible values, see KeychainSwiftAccessOptions.
+   12|       |   
+   13|       |   */
+   14|      0|  public static var accessible: String { return toString(kSecAttrAccessible) }
+   15|       |  
+   16|       |  /// Used for specifying a String key when setting/getting a Keychain value.
+   17|      8|  public static var attrAccount: String { return toString(kSecAttrAccount) }
+   18|       |
+   19|       |  /// Used for specifying synchronization of keychain items between devices.
+   20|      0|  public static var attrSynchronizable: String { return toString(kSecAttrSynchronizable) }
+   21|       |  
+   22|       |  /// An item class key used to construct a Keychain search dictionary.
+   23|      8|  public static var klass: String { return toString(kSecClass) }
+   24|       |  
+   25|       |  /// Specifies the number of values returned from the keychain. The library only supports single values.
+   26|      8|  public static var matchLimit: String { return toString(kSecMatchLimit) }
+   27|       |  
+   28|       |  /// A return data type used to get the data from the Keychain.
+   29|      8|  public static var returnData: String { return toString(kSecReturnData) }
+   30|       |  
+   31|       |  /// Used for specifying a value when setting a Keychain value.
+   32|      0|  public static var valueData: String { return toString(kSecValueData) }
+   33|       |  
+   34|     32|  static func toString(_ value: CFString) -> String {
+   35|     32|    return value as String
+   36|     32|  }
+   37|       |}
+   38|       |
+   39|       |
+

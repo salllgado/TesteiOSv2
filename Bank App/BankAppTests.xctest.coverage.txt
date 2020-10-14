@@ -1,0 +1,841 @@
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank AppTests/BankErrorParsingTests.swift:
+    1|       |//
+    2|       |//  BankErrorParsingTests.swift
+    3|       |//  Bank AppTests
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 19/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import XCTest
+   10|       |@testable import Bank_App
+   11|       |
+   12|       |class BankErrorParsingTests: XCTestCase {
+   13|       |
+   14|      1|    func testDecodableWithoutOptionals() {
+   15|      1|        let jsonValue: [String: Any] = [
+   16|      1|            "code": 53,
+   17|      1|            "message": "Usuário ou senha incorreta"
+   18|      1|        ]
+   19|      1|        
+   20|      1|        do {
+   21|      1|            let jsonData = try jsonValue.convertToJsonData()
+   22|      1|            let objResponse = try JSONDecoder().decode(BankError.self, from: jsonData)
+   23|      1|            XCTAssertEqual(objResponse.code, 53)
+   24|      1|            XCTAssertEqual(objResponse.message, "Usuário ou senha incorreta")
+   25|      1|        } catch {
+   26|      0|            XCTFail("\(error.localizedDescription)")
+   27|      1|        }
+   28|      1|    }
+   29|       |    
+   30|      1|    func testDecodableOptionalsNil() {
+   31|      1|        let jsonValue: [String: Any] = [:]
+   32|      1|        
+   33|      1|        do {
+   34|      1|            let jsonData = try jsonValue.convertToJsonData()
+   35|      1|            let objResponse = try JSONDecoder().decode(BankError.self, from: jsonData)
+   36|      1|            XCTAssertNil(objResponse.code)
+   37|      1|            XCTAssertNil(objResponse.message)
+   38|      1|        } catch {
+   39|      0|            XCTFail("\(error.localizedDescription)")
+   40|      1|        }
+   41|      1|    }
+   42|       |
+   43|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank AppTests/DoubleFormatAsCurrencyStringTests.swift:
+    1|       |//
+    2|       |//  DoubleFormatAsCurrencyStringTests.swift
+    3|       |//  Bank AppTests
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 19/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import XCTest
+   10|       |@testable import Bank_App
+   11|       |
+   12|       |class DoubleFormatAsCurrencyStringTests: XCTestCase {
+   13|       |
+   14|      1|    func testFormattingCreditValue() {
+   15|      1|        let doubleValue = 200.00
+   16|      1|        XCTAssertEqual(doubleValue.toStringCurrency(), "R$200,00")
+   17|      1|    }
+   18|       |    
+   19|      1|    func testFormattingDebtValue() {
+   20|      1|        let doubleValue = -450.55
+   21|      1|        XCTAssertEqual(doubleValue.toStringCurrency(), "-R$450,55")
+   22|      1|    }
+   23|       |    
+   24|      1|    func testFormattingWrongValue() {
+   25|      1|        let doubleValue = -450.550
+   26|      1|        XCTAssertEqual(doubleValue.toStringCurrency(), "-R$450,55")
+   27|      1|    }
+   28|       |    
+   29|      1|    func testFormattingRoundingValue() {
+   30|      1|        let doubleValue = 1000.999
+   31|      1|        XCTAssertEqual(doubleValue.toStringCurrency(), "R$1001,00")
+   32|      1|    }
+   33|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank AppTests/FormattingBankAgencyTests.swift:
+    1|       |//
+    2|       |//  FormattingBankAgencyTests.swift
+    3|       |//  Bank AppTests
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 19/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import XCTest
+   10|       |@testable import Bank_App
+   11|       |
+   12|       |class FormattingBankAgencyTests: XCTestCase {
+   13|       |    
+   14|      1|    func testFormatAgency() {
+   15|      1|        let agencyString = "400430454"
+   16|      1|        XCTAssertEqual(agencyString.toBankAgency(), "40.043045-4")
+   17|      1|    }
+   18|       |    
+   19|      1|    func testFormatAgencyAlredyFormatting() {
+   20|      1|        let agencyString = "40.043045-4"
+   21|      1|        XCTAssertEqual(agencyString.toBankAgency(), "40.043045-4")
+   22|      1|    }
+   23|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank AppTests/HexColorToUIColorTests.swift:
+    1|       |//
+    2|       |//  HexColorToUIColorTests.swift
+    3|       |//  Bank AppTests
+    4|       |//
+    5|       |//  Created by Chrystian on 17/01/19.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import XCTest
+   10|       |@testable import Bank_App
+   11|       |
+   12|       |class HexColorToUIColorTests: XCTestCase {
+   13|       |
+   14|      1|    func testGeneretaUIColorFromHexWithPrefix() {
+   15|      1|        let hexString = "#000000"
+   16|      1|        let colorFromHex = hexString.hexColor()
+   17|      1|        XCTAssertEqual(colorFromHex, UIColor.init(displayP3Red: 0, green: 0, blue: 0, alpha: 1))
+   18|      1|    }
+   19|       |    
+   20|      1|    func testGeneretaUIColorFromHexWithoutPrefix() {
+   21|      1|        let hexString = "000000"
+   22|      1|        let colorFromHex = hexString.hexColor()
+   23|      1|        XCTAssertEqual(colorFromHex, UIColor.init(displayP3Red: 0, green: 0, blue: 0, alpha: 1))
+   24|      1|    }
+   25|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank AppTests/IntroControllerTests.swift:
+    1|       |//
+    2|       |//  IntroViewControllerTests.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian Salgado on 20/02/19.
+    6|       |//  Copyright (c) 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |//  This file was generated by the Clean Swift Xcode Templates so
+    9|       |//  you can apply clean architecture to your iOS and Mac projects,
+   10|       |//  see http://clean-swift.com
+   11|       |//
+   12|       |
+   13|       |@testable import Bank_App
+   14|       |import XCTest
+   15|       |
+   16|       |class IntroControllerTests: XCTestCase {
+   17|       |    // MARK: Subject under test
+   18|       |    
+   19|       |    var sut: IntroController!
+   20|       |    var window: UIWindow!
+   21|       |    
+   22|       |    // MARK: Test lifecycle
+   23|       |    
+   24|      2|    override func setUp() {
+   25|      2|        super.setUp()
+   26|      2|        window = UIWindow()
+   27|      2|        setupIntroViewController()
+   28|      2|    }
+   29|       |    
+   30|      2|    override func tearDown() {
+   31|      2|        window = nil
+   32|      2|        super.tearDown()
+   33|      2|    }
+   34|       |    
+   35|       |    // MARK: Test setup
+   36|       |    
+   37|      2|    func setupIntroViewController() {
+   38|      2|        let bundle = Bundle.main
+   39|      2|        let storyboard = UIStoryboard(name: "Main", bundle: bundle)
+   40|      2|        sut = storyboard.instantiateViewController(withIdentifier: "IntroController") as? IntroController
+   41|      2|    }
+   42|       |    
+   43|      2|    func loadView() {
+   44|      2|        window.addSubview(sut.view)
+   45|      2|        RunLoop.current.run(until: Date())
+   46|      2|    }
+   47|       |    
+   48|       |    // MARK: Test doubles
+   49|       |    
+   50|       |    class IntroBusinessLogicSpy: IntroBusinessLogic {
+   51|       |        
+   52|       |        var doSomethingCalled = false
+   53|       |        
+   54|      1|        func loginUser(user: UserLogin) {
+   55|      1|            doSomethingCalled = true
+   56|      1|        }
+   57|       |        
+   58|      3|        func tryAutoLogin() {
+   59|      3|            doSomethingCalled = true
+   60|      3|        }
+   61|       |        
+   62|      2|        func resetStatusBar() {
+   63|      2|            doSomethingCalled = true
+   64|      2|        }
+   65|       |        
+   66|      0|        func verifyFields(_ fields: [UITextField]) {
+   67|      0|            doSomethingCalled = true
+   68|      0|        }
+   69|       |        
+   70|       |    }
+   71|       |    
+   72|       |    // MARK: Tests
+   73|       |    
+   74|      1|    func testTryAutoLogin() {
+   75|      1|        // Given
+   76|      1|        let spy = IntroBusinessLogicSpy()
+   77|      1|        sut.interactor = spy
+   78|      1|        
+   79|      1|        // When
+   80|      1|        loadView()
+   81|      1|        
+   82|      1|        // Do
+   83|      1|        sut.tryAutoLogin()
+   84|      1|        
+   85|      1|        // Then
+   86|      1|        XCTAssertTrue(spy.doSomethingCalled, "o método relativo ao tryAutoLogin() no interactor foi chamado")
+   87|      1|    }
+   88|       |    
+   89|      1|    func testLogin() {
+   90|      1|        // Given
+   91|      1|        let spy = IntroBusinessLogicSpy()
+   92|      1|        sut.interactor = spy
+   93|      1|        
+   94|      1|        // When
+   95|      1|        loadView()
+   96|      1|        
+   97|      1|        // Do
+   98|      1|        sut.doLogin()
+   99|      1|        
+  100|      1|        // Then
+  101|      1|        XCTAssertTrue(spy.doSomethingCalled, "o método relativo ao tryAutoLogin() no interactor foi chamado")
+  102|      1|    }
+  103|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank AppTests/IntroInteractorTests.swift:
+    1|       |//
+    2|       |//  IntroInteractorTests.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian Salgado on 20/02/19.
+    6|       |//  Copyright (c) 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |//  This file was generated by the Clean Swift Xcode Templates so
+    9|       |//  you can apply clean architecture to your iOS and Mac projects,
+   10|       |//  see http://clean-swift.com
+   11|       |//
+   12|       |
+   13|       |@testable import Bank_App
+   14|       |import XCTest
+   15|       |
+   16|       |class IntroInteractorTests: XCTestCase {
+   17|       |    // MARK: Subject under test
+   18|       |    
+   19|       |    var sut: IntroInteractor!
+   20|       |    
+   21|       |    // MARK: Test lifecycle
+   22|       |    
+   23|      5|    override func setUp() {
+   24|      5|        super.setUp()
+   25|      5|        setupIntroInteractor()
+   26|      5|    }
+   27|       |    
+   28|      5|    override func tearDown() {
+   29|      5|        super.tearDown()
+   30|      5|    }
+   31|       |    
+   32|       |    // MARK: Test setup
+   33|       |    
+   34|      5|    func setupIntroInteractor() {
+   35|      5|        sut = IntroInteractor()
+   36|      5|    }
+   37|       |    
+   38|       |    // MARK: Test doubles
+   39|       |    
+   40|       |    class IntroPresentationLogicSpy: IntroPresentationLogic {
+   41|       |        
+   42|       |        var presentSomethingCalled = false
+   43|       |        
+   44|      0|        func showHistoryController() {
+   45|      0|            presentSomethingCalled = true
+   46|      0|        }
+   47|       |        
+   48|      0|        func showError(error: BankError) {
+   49|      0|            print(error.message ?? "")
+   50|      0|            presentSomethingCalled = true
+   51|      0|        }
+   52|       |        
+   53|      2|        func showLoading() {
+   54|      2|            presentSomethingCalled = true
+   55|      2|        }
+   56|       |        
+   57|      1|        func catchPasswordInvalid() {
+   58|      1|            presentSomethingCalled = true
+   59|      1|        }
+   60|       |        
+   61|      1|        func abortAutoLogin(error: BankError) {
+   62|      1|            print(error.message)
+   63|      1|            presentSomethingCalled = true
+   64|      1|        }
+   65|       |        
+   66|      1|        func setDefaultStatusBar() {
+   67|      1|            presentSomethingCalled = true
+   68|      1|        }
+   69|       |        
+   70|      1|        func enableLoginButton(_ enable: Bool) {
+   71|      1|            presentSomethingCalled = true
+   72|      1|        }
+   73|       |    }
+   74|       |    
+   75|       |    // MARK: Tests
+   76|      1|    func testAutoLogin() {
+   77|      1|        
+   78|      1|        // Given
+   79|      1|        let spy = IntroPresentationLogicSpy()
+   80|      1|        sut.presenter = spy
+   81|      1|        
+   82|      1|        // When
+   83|      1|            sut.tryAutoLogin()
+   84|      1|        
+   85|      1|        // Then
+   86|      1|        XCTAssertTrue(spy.presentSomethingCalled, "testAutoLogin() dentro do presenter foi chamado")
+   87|      1|    }
+   88|       |    
+   89|      1|    func testManualLoginError() {
+   90|      1|        
+   91|      1|        // Given
+   92|      1|        let spy = IntroPresentationLogicSpy()
+   93|      1|        sut.presenter = spy
+   94|      1|        
+   95|      1|        // When
+   96|      1|        sut.loginUser(user: UserLogin(user: "", password: "1223456"))
+   97|      1|        
+   98|      1|        // Then
+   99|      1|        XCTAssertTrue(spy.presentSomethingCalled, "o método loginUser() chamou alguem la dentro do presenter no caso de erro.")
+  100|      1|    }
+  101|       |    
+  102|      1|    func testManualLoginSuccess() {
+  103|      1|        
+  104|      1|        // Given
+  105|      1|        let spy = IntroPresentationLogicSpy()
+  106|      1|        sut.presenter = spy
+  107|      1|        
+  108|      1|        // When
+  109|      1|        sut.loginUser(user: UserLogin(user: "user_login", password: "Teste2@19"))
+  110|      1|        
+  111|      1|        // Then
+  112|      1|        XCTAssertTrue(spy.presentSomethingCalled, "o método loginUser() chamou alguem la dentro do presenter no caso de sucesso.")
+  113|      1|    }
+  114|       |    
+  115|      1|    func testSetDefaultStatusBar() {
+  116|      1|        
+  117|      1|        // Given
+  118|      1|        let spy = IntroPresentationLogicSpy()
+  119|      1|        sut.presenter = spy
+  120|      1|        
+  121|      1|        // When
+  122|      1|        sut.resetStatusBar()
+  123|      1|        
+  124|      1|        // Then
+  125|      1|        XCTAssertTrue(spy.presentSomethingCalled, "o método setDefaultStatusBar() chamou alguem la dentro do presenter no caso de sucesso.")
+  126|      1|    }
+  127|       |    
+  128|      1|    func testEnableLoginButton() {
+  129|      1|        
+  130|      1|        // Given
+  131|      1|        let spy = IntroPresentationLogicSpy()
+  132|      1|        sut.presenter = spy
+  133|      1|        
+  134|      1|        // When
+  135|      1|        sut.verifyFields([UITextField()])
+  136|      1|        
+  137|      1|        // Then
+  138|      1|        XCTAssertTrue(spy.presentSomethingCalled, "o método enableLoginButton() foi chamado no presenter.")
+  139|      1|    }
+  140|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank AppTests/IntroPresenterTests.swift:
+    1|       |//
+    2|       |//  IntroPresenterTests.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian Salgado on 20/02/19.
+    6|       |//  Copyright (c) 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |//  This file was generated by the Clean Swift Xcode Templates so
+    9|       |//  you can apply clean architecture to your iOS and Mac projects,
+   10|       |//  see http://clean-swift.com
+   11|       |//
+   12|       |
+   13|       |@testable import Bank_App
+   14|       |import XCTest
+   15|       |
+   16|       |class IntroPresenterTests: XCTestCase
+   17|       |{
+   18|       |    // MARK: Subject under test
+   19|       |    
+   20|       |    var sut: IntroPresenter!
+   21|       |    
+   22|       |    // MARK: Test lifecycle
+   23|       |    
+   24|      6|    override func setUp() {
+   25|      6|        super.setUp()
+   26|      6|        setupIntroPresenter()
+   27|      6|    }
+   28|       |    
+   29|      6|    override func tearDown() {
+   30|      6|        super.tearDown()
+   31|      6|    }
+   32|       |    
+   33|       |    // MARK: Test setup
+   34|       |    
+   35|      6|    func setupIntroPresenter() {
+   36|      6|        sut = IntroPresenter()
+   37|      6|    }
+   38|       |    
+   39|       |    // MARK: Test doubles
+   40|       |    
+   41|       |    class IntroDisplayLogicSpy: IntroDisplayLogic {
+   42|       |       
+   43|       |        var displaySomethingCalled = false
+   44|       |        
+   45|      0|        func displayData() {
+   46|      0|            displaySomethingCalled = true
+   47|      0|        }
+   48|       |        
+   49|      2|        func showError(_ alertController: UIAlertController) {
+   50|      2|            displaySomethingCalled = true
+   51|      2|        }
+   52|       |        
+   53|      1|        func presentDetailController() {
+   54|      1|            displaySomethingCalled = true
+   55|      1|        }
+   56|       |        
+   57|      1|        func configureLoginAnimationLoading() {
+   58|      1|            displaySomethingCalled = true
+   59|      1|        }
+   60|       |        
+   61|      3|        func configureLoginAnimationCompletion() {
+   62|      3|            displaySomethingCalled = true
+   63|      3|        }
+   64|       |        
+   65|      1|        func configureInvalidPassword() {
+   66|      1|            displaySomethingCalled = true
+   67|      1|        }
+   68|       |        
+   69|      1|        func setupStatusBar(statusBarStyle: UIStatusBarStyle, backgroudColor: UIColor?) {
+   70|      1|            displaySomethingCalled = true
+   71|      1|        }
+   72|       |        
+   73|      1|        func enableLogin(_ enabled: Bool) {
+   74|      1|            displaySomethingCalled = true
+   75|      1|        }
+   76|       |        
+   77|       |    }
+   78|       |    
+   79|       |    // MARK: Tests
+   80|       |    
+   81|      1|    func testShowError() {
+   82|      1|        let spy = IntroDisplayLogicSpy()
+   83|      1|        sut.viewController = spy
+   84|      1|        
+   85|      1|        // When
+   86|      1|        let error = BankErrorType.userWrong.error
+   87|      1|        sut.showError(error: error)
+   88|      1|        
+   89|      1|        // Then
+   90|      1|        XCTAssertTrue(spy.displaySomethingCalled, "Foi chamado o método correspondente no controller para showError")
+   91|      1|    }
+   92|       |    
+   93|      1|    func testShowHistoryController() {
+   94|      1|        let spy = IntroDisplayLogicSpy()
+   95|      1|        sut.viewController = spy
+   96|      1|        
+   97|      1|        // When
+   98|      1|        sut.showHistoryController()
+   99|      1|        
+  100|      1|        // Then
+  101|      1|        XCTAssertTrue(spy.displaySomethingCalled, "Foi chamado o método correspondente no controller showHistoryController")
+  102|      1|    }
+  103|       |    
+  104|      1|    func testLoginLoadingAnimation() {
+  105|      1|        let spy = IntroDisplayLogicSpy()
+  106|      1|        sut.viewController = spy
+  107|      1|        
+  108|      1|        // When
+  109|      1|        sut.showLoading()
+  110|      1|        
+  111|      1|        // Then
+  112|      1|                XCTAssertTrue(spy.displaySomethingCalled, "Foi chamado o método correspondente no controller para loadingAnimation")
+  113|      1|    }
+  114|       |    
+  115|      1|    func testInvalidPassword() {
+  116|      1|        let spy = IntroDisplayLogicSpy()
+  117|      1|        sut.viewController = spy
+  118|      1|        
+  119|      1|        // When
+  120|      1|        sut.catchPasswordInvalid()
+  121|      1|        
+  122|      1|        // Then
+  123|      1|        XCTAssertTrue(spy.displaySomethingCalled, "Foi chamado o método correspondente no controller para invalidPassword")
+  124|      1|    }
+  125|       |    
+  126|      1|    func testSetupStatusBar() {
+  127|      1|        let spy = IntroDisplayLogicSpy()
+  128|      1|        sut.viewController = spy
+  129|      1|        
+  130|      1|        // When
+  131|      1|        sut.setDefaultStatusBar()
+  132|      1|        
+  133|      1|        // Then
+  134|      1|        XCTAssertTrue(spy.displaySomethingCalled, "Foi chamado o método correspondente no controller para setDefaultStatusBar()")
+  135|      1|    }
+  136|       |    
+  137|      1|    func testEnableLoginButton() {
+  138|      1|        let spy = IntroDisplayLogicSpy()
+  139|      1|        sut.viewController = spy
+  140|      1|        
+  141|      1|        // When
+  142|      1|        sut.enableLoginButton(true)
+  143|      1|        
+  144|      1|        // Then
+  145|      1|        XCTAssertTrue(spy.displaySomethingCalled, "Foi chamado o método correspondente no controller para enableLoginButton(_ boolean: Bool)")
+  146|      1|    }
+  147|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank AppTests/IntroWorkerTests.swift:
+    1|       |//
+    2|       |//  IntroWorkerTests.swift
+    3|       |//  Bank App
+    4|       |//
+    5|       |//  Created by Chrystian Salgado on 20/02/19.
+    6|       |//  Copyright (c) 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |//  This file was generated by the Clean Swift Xcode Templates so
+    9|       |//  you can apply clean architecture to your iOS and Mac projects,
+   10|       |//  see http://clean-swift.com
+   11|       |//
+   12|       |
+   13|       |@testable import Bank_App
+   14|       |import XCTest
+   15|       |
+   16|       |class IntroWorkerTests: XCTestCase
+   17|       |{
+   18|       |    // MARK: Subject under test
+   19|       |    
+   20|       |    var sut: BankWorker!
+   21|       |    
+   22|       |    // MARK: Test lifecycle
+   23|       |    
+   24|      1|    override func setUp() {
+   25|      1|        super.setUp()
+   26|      1|        setupIntroWorker()
+   27|      1|    }
+   28|       |    
+   29|      1|    override func tearDown() {
+   30|      1|        super.tearDown()
+   31|      1|    }
+   32|       |    
+   33|       |    // MARK: Test setup
+   34|       |    
+   35|      1|    func setupIntroWorker() {
+   36|      1|        sut = BankWorker()
+   37|      1|    }
+   38|       |    
+   39|       |    // MARK: Test doubles
+   40|       |    
+   41|       |    // MARK: Tests
+   42|       |    
+   43|      1|    func testSomething() {
+   44|      1|        // Given
+   45|      1|        
+   46|      1|        // When
+   47|      1|        
+   48|      1|        // Then
+   49|      1|    }
+   50|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank AppTests/PasswordValidationTests.swift:
+    1|       |//
+    2|       |//  PasswordValidationTests.swift
+    3|       |//  Bank AppTests
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 19/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import XCTest
+   10|       |@testable import Bank_App
+   11|       |
+   12|       |class PasswordValidationTests: XCTestCase {
+   13|       |    
+   14|       |    var password: String = ""
+   15|       |
+   16|      1|    func testValidationValidPassword() {
+   17|      1|        password = "Qr@12345" // Valid because have Special, Upercase, lowcase, number.
+   18|      1|        XCTAssertEqual(password.isValidPassword(), true)
+   19|      1|    }
+   20|       |    
+   21|      1|    func testValidationBlankPassword() {
+   22|      1|        password = ""
+   23|      1|        XCTAssertEqual(password.isValidPassword(), false)
+   24|      1|    }
+   25|       |    
+   26|      1|    func testValidationInvalidPassword() {
+   27|      1|        password = "qra12345"
+   28|      1|        XCTAssertEqual(password.isValidPassword(), false)
+   29|      1|    }
+   30|       |    
+   31|      1|    func testValidationShortPassword() {
+   32|      1|        password = "qra"
+   33|      1|        XCTAssertEqual(password.isValidPassword(), false)
+   34|      1|    }
+   35|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank AppTests/StatementParsingTests.swift:
+    1|       |//
+    2|       |//  StatementParsingTests.swift
+    3|       |//  Bank AppTests
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 19/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import XCTest
+   10|       |@testable import Bank_App
+   11|       |
+   12|       |class StatementParsingTests: XCTestCase {
+   13|       |
+   14|      1|    func testDecodable() {
+   15|      1|        let jsonValue: [String: Any] = [
+   16|      1|            "title": "Pagamento",
+   17|      1|            "desc": "Conta de luz",
+   18|      1|            "date": "2018-08-15",
+   19|      1|            "value": -50
+   20|      1|        ]
+   21|      1|        
+   22|      1|        do {
+   23|      1|            let jsonData = try jsonValue.convertToJsonData()
+   24|      1|            let objResponse = try JSONDecoder().decode(Statement.self, from: jsonData)
+   25|      1|            XCTAssertEqual(objResponse.title, "Pagamento")
+   26|      1|            XCTAssertEqual(objResponse.description, "Conta de luz")
+   27|      1|            XCTAssertEqual(objResponse.date, "2018-08-15".toDate())
+   28|      1|            XCTAssertEqual(objResponse.value, "-R$50,00")
+   29|      1|        } catch {
+   30|      0|            XCTFail("\(error.localizedDescription)")
+   31|      1|        }
+   32|      1|    }
+   33|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank AppTests/StatementResponseParsingTests.swift:
+    1|       |//
+    2|       |//  StatementResponseParsingTests.swift
+    3|       |//  Bank AppTests
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 19/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import XCTest
+   10|       |@testable import Bank_App
+   11|       |
+   12|       |class StatementResponseParsingTests: XCTestCase {
+   13|       |
+   14|      1|    func testDecodableWithStatementList() {
+   15|      1|        let jsonValue: [String: Any] = [
+   16|      1|            "statementList": [
+   17|      1|                [
+   18|      1|                    "title": "Pagamento",
+   19|      1|                    "desc": "Conta de luz",
+   20|      1|                    "date": "2018-08-15",
+   21|      1|                    "value": -50
+   22|      1|                ],
+   23|      1|                [
+   24|      1|                    "title": "TED Recebida",
+   25|      1|                    "desc": "Joao Alfredo",
+   26|      1|                    "date": "2018-07-25",
+   27|      1|                    "value": 745.03
+   28|      1|                ],
+   29|      1|                [
+   30|      1|                    "title": "DOC Recebida",
+   31|      1|                    "desc": "Victor Silva",
+   32|      1|                    "date": "2018-06-23",
+   33|      1|                    "value": 399.9
+   34|      1|                ]
+   35|      1|            ],
+   36|      1|            "error": [:]
+   37|      1|        ]
+   38|      1|        
+   39|      1|        do {
+   40|      1|            let jsonData = try jsonValue.convertToJsonData()
+   41|      1|            let objResponse = try JSONDecoder().decode(StatementResponse.self, from: jsonData)
+   42|      1|            XCTAssertNotNil(objResponse.statementList)
+   43|      1|            XCTAssertNotNil(objResponse.error)
+   44|      1|        } catch {
+   45|      0|            XCTFail("\(error.localizedDescription)")
+   46|      1|        }
+   47|      1|    }
+   48|       |    
+   49|      1|    func testDecodableWithError() {
+   50|      1|        let jsonValue: [String: Any] = [
+   51|      1|            "statementList": [],
+   52|      1|            "error": [
+   53|      1|                "code": 53,
+   54|      1|                "message": "Usuário não encontrado"
+   55|      1|            ]
+   56|      1|        ]
+   57|      1|        
+   58|      1|        do {
+   59|      1|            let jsonData = try jsonValue.convertToJsonData()
+   60|      1|            let objResponse = try JSONDecoder().decode(StatementResponse.self, from: jsonData)
+   61|      1|            XCTAssertNotNil(objResponse.statementList)
+   62|      1|            XCTAssertNotNil(objResponse.error)
+   63|      1|        } catch {
+   64|      0|            XCTFail("\(error.localizedDescription)")
+   65|      1|        }
+   66|      1|    }
+   67|       |    
+   68|      1|    func testDecodableOptionalsNil() {
+   69|      1|        let jsonValue: [String: Any] = [:]
+   70|      1|        
+   71|      1|        do {
+   72|      1|            let jsonData = try jsonValue.convertToJsonData()
+   73|      1|            let objResponse = try JSONDecoder().decode(StatementResponse.self, from: jsonData)
+   74|      1|            XCTAssertNil(objResponse.statementList)
+   75|      1|            XCTAssertNil(objResponse.error)
+   76|      1|        } catch {
+   77|      0|            XCTFail("\(error.localizedDescription)")
+   78|      1|        }
+   79|      1|    }
+   80|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank AppTests/UserAccountParsingTests.swift:
+    1|       |//
+    2|       |//  UserAccountParsingTests.swift
+    3|       |//  Bank AppTests
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 19/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import XCTest
+   10|       |@testable import Bank_App
+   11|       |
+   12|       |class UserAccountParsingTests: XCTestCase {
+   13|       |
+   14|      1|    func testDecodable() {
+   15|      1|        let jsonValue: [String: Any] = [
+   16|      1|            "userId": 1,
+   17|      1|            "name": "Jose da Silva Teste",
+   18|      1|            "bankAccount": "2050",
+   19|      1|            "agency": "012314564",
+   20|      1|            "balance": 3.3445
+   21|      1|        ]
+   22|      1|        
+   23|      1|        do {
+   24|      1|            let jsonData = try jsonValue.convertToJsonData()
+   25|      1|            let objResponse = try JSONDecoder().decode(UserAccount.self, from: jsonData)
+   26|      1|            
+   27|      1|            XCTAssertEqual(objResponse.userId, 1)
+   28|      1|            XCTAssertEqual(objResponse.name, "Jose da Silva Teste")
+   29|      1|            XCTAssertEqual(objResponse.bankAccount, "2050")
+   30|      1|            XCTAssertEqual(objResponse.agency, "01.231456-4")
+   31|      1|            XCTAssertEqual(objResponse.balance, 3.3445)
+   32|      1|        } catch {
+   33|      0|            XCTFail("\(error.localizedDescription)")
+   34|      1|        }
+   35|      1|    }
+   36|       |}
+
+/Users/salgado/Documents/iOSProj/TesteiOSv2/Bank App/Bank AppTests/UserResponseParsingTests.swift:
+    1|       |//
+    2|       |//  Bank_AppTests.swift
+    3|       |//  Bank AppTests
+    4|       |//
+    5|       |//  Created by Chrystian (Pessoal) on 09/01/2019.
+    6|       |//  Copyright © 2019 Salgado's Productions. All rights reserved.
+    7|       |//
+    8|       |
+    9|       |import XCTest
+   10|       |@testable import Bank_App
+   11|       |
+   12|       |class UserResponseParsingTests: XCTestCase {
+   13|       |
+   14|      1|    func testDecodableWithUserAccountData() {
+   15|      1|        let jsonValue: [String: Any] = [
+   16|      1|            "userAccount": [
+   17|      1|                "userId": 1,
+   18|      1|                "name": "Jose da Silva Teste",
+   19|      1|                "bankAccount": "2050",
+   20|      1|                "agency": "012314564",
+   21|      1|                "balance": 3.3445
+   22|      1|            ],
+   23|      1|            "error": [:]
+   24|      1|        ]
+   25|      1|        
+   26|      1|        do {
+   27|      1|            let jsonData = try jsonValue.convertToJsonData()
+   28|      1|            let objResponse = try JSONDecoder().decode(UserResponse.self, from: jsonData)
+   29|      1|            XCTAssertNotNil(objResponse.userAccount)
+   30|      1|            XCTAssertNotNil(objResponse.error)
+   31|      1|        } catch {
+   32|      0|            XCTFail(error.localizedDescription)
+   33|      1|        }
+   34|      1|    }
+   35|       |    
+   36|      1|    func testDecodableWithErrorData() {
+   37|      1|        let jsonValue: [String: Any] = [
+   38|      1|            "userAccount": [:],
+   39|      1|            "error": [
+   40|      1|                "code": 53,
+   41|      1|                "message": "Usuário ou senha incorreta"
+   42|      1|            ]
+   43|      1|        ]
+   44|      1|        
+   45|      1|        do {
+   46|      1|            let jsonData = try jsonValue.convertToJsonData()
+   47|      1|            let objResponse = try JSONDecoder().decode(UserResponse.self, from: jsonData)
+   48|      1|            XCTAssertNotNil(objResponse.userAccount)
+   49|      1|            XCTAssertNotNil(objResponse.error)
+   50|      1|        } catch {
+   51|      0|            XCTFail(error.localizedDescription)
+   52|      1|        }
+   53|      1|    }
+   54|       |    
+   55|      1|    func testDecodableWithNil() {
+   56|      1|        let jsonValue: [String: Any] = [:]
+   57|      1|        
+   58|      1|        do {
+   59|      1|            let jsonData = try jsonValue.convertToJsonData()
+   60|      1|            let objResponse = try JSONDecoder().decode(UserResponse.self, from: jsonData)
+   61|      1|            XCTAssertNil(objResponse.userAccount)
+   62|      1|            XCTAssertNil(objResponse.error)
+   63|      1|        } catch {
+   64|      0|            XCTFail(error.localizedDescription)
+   65|      1|        }
+   66|      1|    }
+   67|       |}
+
